@@ -235,7 +235,6 @@ class DumpCoordinates(wx.Panel, DefaultOperationUI):
 
             for bk in blocks_array:
                 with open("plugins/txt_coords/"+str(bk)+".txt","w+") as textfile:
-                    blocks_count.append(len(blocks_array[bk]))
 
                     #writes the txt files at path plugins/txt_coords
                     for bks in blocks_array[bk]:
