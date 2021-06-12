@@ -7,6 +7,7 @@
 
 #Big thanks to gentlegiantJGC for information on the Amulet API.
 
+#imports for required modules.
 import numpy
 from typing import TYPE_CHECKING, Tuple
 
