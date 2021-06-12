@@ -1,4 +1,4 @@
-#This code is for non-commercial use only.
+#This code is for non-commercial use only for the time being.
 #https://creativecommons.org/licenses/by-nc/3.0/
 
 #Please provide credit when possible, thanks :)
