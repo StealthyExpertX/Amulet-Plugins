@@ -2,9 +2,6 @@
 
 #v1.0.0 - Clean Everything
 
-#Plugin removes blocks or block types based on your mode and currently only ores are supported,
-#More modes will be added in updates when possible.
-
 #Twitter: @RedstonerLabs
 #Discord: StealthyExpert#8940
 
@@ -182,7 +179,7 @@ class RemoveNot(wx.Panel, DefaultOperationUI):
 
                     #gets block name and checks if it doesn't exist in ore names and if not set an air block.
                     if block.base_name not in ore_names:
-                        world.set_version_block(x, y, z, dim, mc_version, air_block, tile_entity)
+                        world.set_version_block(x, y, z, dim, mc_version, air_block, None)
                         self._refresh_chunk(dim, world, x, z)
                         dirty_block+=1
                     else:
