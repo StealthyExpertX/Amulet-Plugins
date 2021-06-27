@@ -107,7 +107,7 @@ class RemoveNot(wx.Panel, DefaultOperationUI):
 
     @property
     def wx_add_options(self) -> Tuple[int, ...]:
-        return (1,)
+        return (0,)
 
     def _on_mode_change(self, evt):
         self._mode_description.SetLabel(
