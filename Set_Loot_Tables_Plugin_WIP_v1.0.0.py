@@ -11,8 +11,7 @@
 #Discord: StealthyExpert#8940
 
 
-
-#VERSION DOCS this is for tracking loot tables btw versions.
+#VERSION DOCS this is for tracking loot tables between versions.
 
 # Cave & Cliffs #Added no loot tables.
 # JAVA: 2724
@@ -28,7 +27,7 @@
 
 # Village & Pillage #ADDED THE "village" loot tables directory and added new loot tables for villages.
 # JAVA: 1952
-# BEDROCK: (1,11,0)
+# BEDROCK: (1,10,0)
 
 # Update Aquatic #ADDED THE ocean treasure loot tables.
 # JAVA: 1519
@@ -38,7 +37,9 @@
 from typing import TYPE_CHECKING, Tuple
 from amulet.api.wrapper import Interface, EntityIDType, EntityCoordType
 
-import numpy
+import wx.richtext
+
+import numpy as np
 import urllib.request
 import wx
 import ast
@@ -93,14 +94,22 @@ test_url = 'http://google.com'
 
 #operation mode types.
 operation_modes = {
-    "Randomize LootTables": "Set containers with randomized vanilla loot tables.",
-    "Set Vanilla LootTables": "Set containers with a selected vanilla loot table name.",
-    "Set Custom LootTables": "Set containers with a custom inputed loot table path.",
+    "Randomize": "Set containers with randomized vanilla loot tables.",
+    "Vanilla": "Set containers with a selected vanilla loot table name.",
+    "Custom": "Set containers with a custom inputed loot table path.",
 }
+
+loot_table_seed = 0
+
+#selected loot table path for the custom operation.
+selected_custom_table = "loot_tables/custom.json"
+
+#supported platform types to look for.
+platform_names = ['java', 'bedrock']
 
 #bedrock op loot tables.
 #these loot tables contain items that are considered too op and have high enchants & loot, etc.
-#updated bedrock_1.17.0 & java_1.17
+#updated to bedrock_1.17.0 & java_1.17
 hardcoded_ops = [
     "loot_tables/chests/bastion_treasure.json",
     "loot_tables/chests/shipwrecksupply.json",
@@ -110,11 +119,229 @@ hardcoded_ops = [
     "loot_tables/chests/shipwrecktreasure.json"
 ]
 
+#this table is hardcoded for bedrock, for the edge case that all other loot tables extractions fail for bedrock but only for the current update.
+loots_hardcoded = [
+    "loot_tables/chests/abandoned_mineshaft.json",
+    "loot_tables/chests/bastion_bridge.json",
+    "loot_tables/chests/bastion_hoglin_stable.json",
+    "loot_tables/chests/bastion_other.json",
+    "loot_tables/chests/bastion_treasure.json",
+    "loot_tables/chests/buriedtreasure.json",
+    "loot_tables/chests/desert_pyramid.json",
+    "loot_tables/chests/dispenser_trap.json",
+    "loot_tables/chests/end_city_treasure.json",
+    "loot_tables/chests/igloo_chest.json",
+    "loot_tables/chests/jungle_temple.json",
+    "loot_tables/chests/monster_room.json",
+    "loot_tables/chests/nether_bridge.json",
+    "loot_tables/chests/pillager_outpost.json",
+    "loot_tables/chests/ruined_portal.json",
+    "loot_tables/chests/shipwreck.json",
+    "loot_tables/chests/shipwrecksupply.json",
+    "loot_tables/chests/shipwrecktreasure.json",
+    "loot_tables/chests/simple_dungeon.json",
+    "loot_tables/chests/spawn_bonus_chest.json",
+    "loot_tables/chests/stronghold_corridor.json",
+    "loot_tables/chests/stronghold_crossing.json",
+    "loot_tables/chests/stronghold_library.json",
+    "loot_tables/chests/underwater_ruin_big.json",
+    "loot_tables/chests/underwater_ruin_small.json",
+    "loot_tables/chests/village_blacksmith.json",
+    "loot_tables/chests/village_two_room_house.json",
+    "loot_tables/chests/woodland_mansion.json",
+    "loot_tables/chests/village/village_armorer.json",
+    "loot_tables/chests/village/village_butcher.json",
+    "loot_tables/chests/village/village_cartographer.json",
+    "loot_tables/chests/village/village_desert_house.json",
+    "loot_tables/chests/village/village_fletcher.json",
+    "loot_tables/chests/village/village_mason.json",
+    "loot_tables/chests/village/village_plains_house.json",
+    "loot_tables/chests/village/village_savanna_house.json",
+    "loot_tables/chests/village/village_shepherd.json",
+    "loot_tables/chests/village/village_snowy_house.json",
+    "loot_tables/chests/village/village_taiga_house.json",
+    "loot_tables/chests/village/village_tannery.json",
+    "loot_tables/chests/village/village_temple.json",
+    "loot_tables/chests/village/village_toolsmith.json",
+    "loot_tables/chests/village/village_weaponsmith.json"
+]
+
+#this table is hardcoded for bedrock & java - techically universally supported btw both platforms.
+#for the edge case that all other loot tables extraction methods fail but only for the current update.
+loots_universal_table = [
+    "loot_tables/chests/abandoned_mineshaft.json",
+    "loot_tables/chests/bastion_bridge.json",
+    "loot_tables/chests/bastion_hoglin_stable.json",
+    "loot_tables/chests/bastion_other.json",
+    "loot_tables/chests/bastion_treasure.json",
+    "loot_tables/chests/buriedtreasure.json",
+    "loot_tables/chests/desert_pyramid.json",
+    "loot_tables/chests/end_city_treasure.json",
+    "loot_tables/chests/igloo_chest.json",
+    "loot_tables/chests/jungle_temple.json",
+    "loot_tables/chests/nether_bridge.json",
+    "loot_tables/chests/pillager_outpost.json",
+    "loot_tables/chests/ruined_portal.json",
+    "loot_tables/chests/simple_dungeon.json",
+    "loot_tables/chests/spawn_bonus_chest.json",
+    "loot_tables/chests/stronghold_corridor.json",
+    "loot_tables/chests/stronghold_crossing.json",
+    "loot_tables/chests/stronghold_library.json",
+    "loot_tables/chests/underwater_ruin_big.json",
+    "loot_tables/chests/underwater_ruin_small.json",
+    "loot_tables/chests/woodland_mansion.json",
+    "loot_tables/chests/village/village_armorer.json",
+    "loot_tables/chests/village/village_butcher.json",
+    "loot_tables/chests/village/village_cartographer.json",
+    "loot_tables/chests/village/village_desert_house.json",
+    "loot_tables/chests/village/village_fletcher.json",
+    "loot_tables/chests/village/village_mason.json",
+    "loot_tables/chests/village/village_plains_house.json",
+    "loot_tables/chests/village/village_savanna_house.json",
+    "loot_tables/chests/village/village_shepherd.json",
+    "loot_tables/chests/village/village_snowy_house.json",
+    "loot_tables/chests/village/village_taiga_house.json",
+    "loot_tables/chests/village/village_tannery.json",
+    "loot_tables/chests/village/village_temple.json",
+    "loot_tables/chests/village/village_toolsmith.json",
+    "loot_tables/chests/village/village_weaponsmith.json"
+]
+
 #loot table settings for randomizing.
-lblList = ['Epic Quality', "Normal Quality"] 
+quality_names = ['Epic Quality', "Normal Quality"] 
+
+#loot table version mapping for bedrock.
+#remove these loot strings or rename their paths durring universal loot table conversion.
+bedrock_remove_tables = {
+    "pre_1.16.0":{
+        "loot_tables/chests/bastion_bridge.json": None,
+        "loot_tables/chests/bastion_hoglin_stable.json": None,
+        "loot_tables/chests/bastion_other.json": None,
+        "loot_tables/chests/bastion_treasure.json": None,
+        "loot_tables/chests/ruined_portal.json": None
+    },
+    "pre_1.10.0":{
+        "loot_tables/chests/village/village_armorer.json": None,
+        "loot_tables/chests/village/village_butcher.json": None,
+        "loot_tables/chests/village/village_cartographer.json": None,
+        "loot_tables/chests/village/village_desert_house.json": None,
+        "loot_tables/chests/village/village_mason.json": None,
+        "loot_tables/chests/village/village_plains_house.json": None,
+        "loot_tables/chests/village/village_savanna_house.json": None,
+        "loot_tables/chests/village/village_shepherd.json": None,
+        "loot_tables/chests/village/village_snowy_house.json": None,
+        "loot_tables/chests/village/village_taiga_house.json": None,
+        "loot_tables/chests/village/village_tannery.json": None,
+        "loot_tables/chests/village/village_temple.json": None,
+        "loot_tables/chests/village/village_toolsmith.json": None,
+        "loot_tables/chests/village/village_weaponsmith.json": None
+    },
+    "pre_1.4.0":{
+        "loot_tables/chests/buriedtreasure.json": None,
+        "loot_tables/chests/buriedtreasure.json": None,
+        "loot_tables/chests/shipwrecksupply.json": None,
+        "loot_tables/chests/shipwrecktreasure.json": None,
+        "loot_tables/chests/underwater_ruin_big.json": None,
+        "loot_tables/chests/underwater_ruin_small.json": None,
+    },
+    '*': { #any version renaming or deletion.
+        "loot_tables/chests/jungle_temple_dispenser.json": "loot_tables/chests/dispenser_trap.json",
+        "loot_tables/chests/shipwreck_map.json": "loot_tables/chests/shipwreck.json",
+        "loot_tables/chests/shipwreck_supply.json": "loot_tables/chests/shipwrecksupply.json",
+        "loot_tables/chests/shipwreck_treasure.json": "loot_tables/chests/shipwrecktreasure.json"
+    }
+}
+
+#loot table version mapping for java.
+#remove these loot strings ore remove them durring universal loot table conversion.
+java_remove_tables = {
+    'pre_2566':{ #pre java nether update.
+        "loot_tables/chests/bastion_bridge.json": None,
+        "loot_tables/chests/bastion_hoglin_stable.json": None,
+        "loot_tables/chests/bastion_other.json": None,
+        "loot_tables/chests/bastion_treasure.json": None,
+        "loot_tables/chests/ruined_portal.json": None
+    },
+    'pre_2225':{ #pre java busy bees.
+        "loot_tables/chests/village_blacksmith.json": None
+    },
+    'pre_1952':{ #pre java village & pillage.
+        "loot_tables/chests/village/village_armorer.json": None,
+        "loot_tables/chests/village/village_butcher.json": None,
+        "loot_tables/chests/village/village_cartographer.json": None,
+        "loot_tables/chests/village/village_desert_house.json": None,
+        "loot_tables/chests/village/village_mason.json": None,
+        "loot_tables/chests/village/village_plains_house.json": None,
+        "loot_tables/chests/village/village_savanna_house.json": None,
+        "loot_tables/chests/village/village_shepherd.json": None,
+        "loot_tables/chests/village/village_snowy_house.json": None,
+        "loot_tables/chests/village/village_taiga_house.json": None,
+        "loot_tables/chests/village/village_tannery.json": None,
+        "loot_tables/chests/village/village_temple.json": None,
+        "loot_tables/chests/village/village_toolsmith.json": None,
+        "loot_tables/chests/village/village_weaponsmith.json": None
+    },
+    'pre_1519':{ #pre java update aquatic.
+        "loot_tables/chests/buriedtreasure.json": None,
+        "loot_tables/chests/shipwreck.json": None,
+        "loot_tables/chests/shipwrecksupply.json": None,
+        "loot_tables/chests/shipwrecktreasure.json": None,
+        "loot_tables/chests/underwater_ruin_big.json": None,
+        "loot_tables/chests/underwater_ruin_small.json": None,
+        "loot_tables/chests/shipwreck_map.json": None,
+        "loot_tables/chests/shipwreck_supply.json": None,
+        "loot_tables/chests/shipwreck_treasure.json": None
+    },
+    '*': { #any version of minecraft java.
+        "loot_tables/chests/village_two_room_house.json": None,
+        "loot_tables/chests/monster_room.json": None,
+        "loot_tables/chests/dispenser_trap.json": "loot_tables/chests/jungle_temple_dispenser.json",
+        "loot_tables/chests/shipwreck.json": "loot_tables/chests/shipwreck_map.json",
+        "loot_tables/chests/shipwrecksupply.json": "loot_tables/chests/shipwreck_supply.json",
+        "loot_tables/chests/shipwrecktreasure.json": "loot_tables/chests/shipwreck_treasure.json"
+        
+    }
+    #anything not defined will convert as is.
+}
+
+#loot table version mapping for universal.
+#remove these loot strings durring universal loot table conversion.
+#these are not compatiable in some versions / platforms we remove them in the list generation in a worse case.
+universal_remove_tables = {
+    "loot_tables/chests/bastion_bridge.json": None,
+    "loot_tables/chests/bastion_hoglin_stable.json": None,
+    "loot_tables/chests/bastion_other.json": None,
+    "loot_tables/chests/bastion_treasure.json": None,
+    "loot_tables/chests/ruined_portal.json": None,
+    "loot_tables/chests/jungle_temple_dispenser.json":None,
+    "loot_tables/chests/dispenser_trap.json": None,
+    "loot_tables/chests/shipwreck_map.json": None,
+    "loot_tables/chests/shipwreck.json": None,
+    "loot_tables/chests/shipwrecktreasure.json": None,
+    "loot_tables/chests/shipwreck_treasure.json": None,
+    "loot_tables/chests/shipwreck_supply.json": None,
+    "loot_tables/chests/shipwrecksupply.json": None,
+    "loot_tables/chests/monster_room.json": None,
+    "loot_tables/chests/village_two_room_house.json": None,
+    "loot_tables/chests/village_blacksmith.json": None,
+    "loot_tables/chests/village/village_armorer.json": None,
+    "loot_tables/chests/village/village_butcher.json": None,
+    "loot_tables/chests/village/village_cartographer.json": None,
+    "loot_tables/chests/village/village_desert_house.json": None,
+    "loot_tables/chests/village/village_mason.json": None,
+    "loot_tables/chests/village/village_plains_house.json": None,
+    "loot_tables/chests/village/village_savanna_house.json": None,
+    "loot_tables/chests/village/village_shepherd.json": None,
+    "loot_tables/chests/village/village_snowy_house.json": None,
+    "loot_tables/chests/village/village_taiga_house.json": None,
+    "loot_tables/chests/village/village_tannery.json": None,
+    "loot_tables/chests/village/village_temple.json": None,
+    "loot_tables/chests/village/village_toolsmith.json": None,
+    "loot_tables/chests/village/village_weaponsmith.json": None
+}
 
 #wasn't able to data drive the tile_entity list of ids for containers.
-#will revist this at a later date.
+#will revisit this at a later date and make this data driven and the UI as well possibly from a github repo.
 chkdict = {
     "All Containers": "*",
     "Barrels": [
@@ -160,35 +387,44 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
 
         platform = world.level_wrapper.platform
         world_version = world.level_wrapper.version
+        global check_var
+        global plat #plat is a global platform & version tuple object.
+        global loot_table_src #made loot table source that gets generated to populate the list.
+        global sel_block_entities #selected block entities to fill.
+        global all_block_entities #all the block entities as one object.
+        global startup
+        self.check_var = False
+        self.startup = True
 
-        global plat
-        global loot_table_src
-        global sel_block_entities
-        global all_block_entities
-
+        #sets platform and world version as the plat object.
         plat = (platform, world_version)
 
+        #gathers the loot tables and formats them to populate the loot table list.
         loot_table_src = {}
         for tbls in self._loot_table_strs((platform, world_version)):
             loot_table_src[os.path.basename(tbls)] = tbls
 
+        #sets the UI pannel
         wx.Panel.__init__(self, parent)
         DefaultOperationUI.__init__(self, parent, canvas, world, options_path)
         self.Freeze()
 
-        self._sizer = wx.BoxSizer(wx.VERTICAL) #verticle shape top to bottom for main dialog.
+        self._sizer = wx.FlexGridSizer(0, 1, 2, 0) #verticle shape top to bottom for main dialog.
         self.SetSizer(self._sizer)
 
+        #loads the default options to be overwitten later.
         options = self._load_options({})
-        top_sizer = wx.BoxSizer(wx.VERTICAL)
-        self._sizer.Add(top_sizer, 1, wx.EXPAND | wx.ALL, 6)
+
+        #creates a box sizer object and sets it.
+        top_sizer = wx.FlexGridSizer(0, 1, 2, 0)
+        self._sizer.Add(top_sizer, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 1)
 
         #text label for mode description
-        self._label_txt1=wx.StaticText(self, 0, label=' Mode (Description)')
+        self._label_txt1=wx.StaticText(self, 0, label=' Loot Mode (Description)')
         self._sizer.Add(self._label_txt1, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
 
         #text label for mode selection
-        self._label_txt2=wx.StaticText(self, 0, label=' Choose (Mode)')
+        self._label_txt2=wx.StaticText(self, 0, label=' Choose (Loot Mode)')
         top_sizer.Add(self._label_txt2, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
 
         #choicebox for operation mode selection.
@@ -208,36 +444,84 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         #handles operation_mode changes.
         self._mode.Bind(wx.EVT_CHOICE, self._on_mode_change)
 
+        #custom loot tables textbox
+        self._label_txt4=wx.StaticText(self, 0, label=' Write (Custom Loot Tables)')
+        
+        #set a font.
+        #self._label_txt4.SetFont(wx.Font(12, wx.ROMAN, wx.ITALIC, wx.NORMAL))
+        top_sizer.Add(self._label_txt4, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
+
+        # #custom loot tables textbox
+        # self.loot_textbox = wx.TextCtrl(
+            # self, style=wx.TE_MULTILINE | wx.HSCROLL | wx.TE_NO_VSCROLL | wx.TE_BESTWRAP, size=(-1, -1)
+        # )
+        #GetMultilineTextExtent()
+        self.loot_textbox = wx.richtext.RichTextCtrl(self,style=wx.TE_MULTILINE, size=(280,150))
+        self.loot_textbox.SetLabel("loot_tables/folder_name/table_name.json")
+        top_sizer.Add(self.loot_textbox, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
+        
+        #text label & spin ctrl for loot table seed
+        self._label_txt5=wx.StaticText(self, 0, label=' Choose (Loot Seed)')
+        top_sizer.Add(self._label_txt5, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
+
+        self.spin_ctrl = wx.SpinCtrl(self, 0, style=wx.SP_ARROW_KEYS|wx.TE_PROCESS_ENTER)
+        self.spin_ctrl.SetRange(int(-2147483648),int(2147483647))
+
+        self.spin_ctrl.Bind(wx.EVT_SPINCTRL, self._on_seed_change)
+        self.spin_ctrl.Bind(wx.EVT_TEXT_ENTER, self._on_seed_enter)
+        self.spin_ctrl.Bind(wx.EVT_SET_FOCUS, self._on_seed_set_focus)
+        self.spin_ctrl.Bind(wx.EVT_KILL_FOCUS, self._on_seed_kill_focus)
+        self.spin_ctrl.Bind(wx.EVT_LEAVE_WINDOW, self._on_seed_leave)
+        self.spin_ctrl.Bind(wx.EVT_ENTER_WINDOW, self._on_seed_join)
+        top_sizer.Add(self.spin_ctrl, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
+        loot_table_seed = 0
+
         #description text box.
         self._mode_description = wx.TextCtrl(
             self, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_BESTWRAP
         )
-        self._sizer.Add(self._mode_description, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 1)
+        self._sizer.Add(self._mode_description, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
 
+        #sets the description label.
         self._mode_description.SetLabel(
             operation_modes[self._mode.GetString(self._mode.GetSelection())]
         )
 
-        self._mode_description.Fit()
-
-        #chest checklistbox.
-        self.checklist = wx.CheckListBox(self, 2, pos = (80,10), choices=list(chkdict.keys()), style=0)
+        self.checklist = wx.CheckListBox(self, 2, pos = (80,10),choices=list(chkdict.keys()) , style=0)
+        self.Bind(wx.EVT_LISTBOX, self._click_skipper, self.checklist)
+        self.Bind(wx.EVT_CHECKLISTBOX, self._check_list_args, self.checklist)
+        self.checklist.Check(0, check=False)
+        self.checklist.Check(1, check=False)
+        self.checklist.Check(2, check=True)
+        self.checklist.Check(3, check=False)
+        self.checklist.Check(4, check=False)
+        self.checklist.Check(5, check=False)
+        self.checklist.Check(6, check=False)
         self._sizer.Add(self.checklist, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
 
         #quality radio box
         #majorDimension = 1 == HORIZONTAL radios
         #majorDimension = 0 == VERTICAL radios
-        self._radio1 = wx.RadioBox(self, label = 'Choose (Loot Option)', pos = (80,10), choices = lblList,majorDimension = 1, style = 0) 
+        self._radio1 = wx.RadioBox(self, label = 'Choose (Loot Option)', pos = (80,10), choices = quality_names,majorDimension = 1, style = 0) 
         self._radio1.Bind(wx.EVT_RADIOBOX,self._on_radio_box)
         self._sizer.Add(self._radio1, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
+
+        self._ignore_empty = wx.CheckBox(self,label="Ignore (Filled Containers)")
+        self._ignore_empty.Bind(wx.EVT_CHECKBOX, self._check_ignore_empties)
+        self._sizer.Add(self._ignore_empty, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
+
 
         #run button
         self._run_button = wx.Button(self, label="Run Operation")
         self._run_button.Bind(wx.EVT_BUTTON, self._run_operation)
-        self._sizer.Add(self._run_button, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 1)
+        self._sizer.Add(self._run_button, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, -1)
 
         #hide the radiobox by default.
         self._radio1.Hide()
+        self.loot_textbox.Hide()
+        self._label_txt4.Hide()
+        self.spin_ctrl.Show()
+        self._label_txt5.Show()
         self.Layout()
         self.Thaw()
 
@@ -250,16 +534,108 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
     def _cls(self):
         print("\033c\033[3J", end='')
 
+    def _check_ignore_empties(self, evt):
+        print (self._ignore_empty)
+
+    def _on_seed_enter(self, evt):
+        self.spin_ctrl.SetValue("0")
+
+    def _on_seed_set_focus(self, evt):
+        self.spin_ctrl.SetValue("0")
+
+    def _on_seed_change(self, evt):
+        self.spin_ctrl.SetValue("0")
+
+    def _on_seed_kill_focus(self, evt):
+        self.spin_ctrl.SetValue("0")
+
+    def _on_seed_leave(self, evt):
+        self.spin_ctrl.SetValue("0")
+
+    def _on_seed_join(self, evt):
+        self.spin_ctrl.SetValue("0")
+
+    def _on_text_enter(self, evt):
+        print ("text_undo!")
+
+    def _click_skipper(self, evt):
+        chk_selection = self.checklist.GetSelection()
+        self.checklist.Deselect(chk_selection)
+        if self.checklist.IsChecked(chk_selection) == True and chk_selection != 0:
+            self.checklist.Check(chk_selection, check=False)
+            return
+        if self.checklist.IsChecked(chk_selection) == False and chk_selection != 0:
+            self.checklist.Check(chk_selection, check=True)
+            return
+        if self.checklist.IsChecked(chk_selection) == True and chk_selection == 0:
+            self.checklist.Check(0, check=False)
+            self.checklist.Check(1, check=False)
+            self.checklist.Check(2, check=True)
+            self.checklist.Check(3, check=False)
+            self.checklist.Check(4, check=False)
+            self.checklist.Check(5, check=False)
+            self.checklist.Check(6, check=False)
+            self.check_var = False
+            return
+        if self.checklist.IsChecked(chk_selection) == False and chk_selection == 0:
+            self.checklist.Check(0, check=True)
+            self.checklist.Check(1, check=True)
+            self.checklist.Check(2, check=True)
+            self.checklist.Check(3, check=True)
+            self.checklist.Check(4, check=True)
+            self.checklist.Check(5, check=True)
+            self.checklist.Check(6, check=True)
+            self.check_var = True
+            return 
+
+    def _check_list_args(self, evt): 
+        checked = list(self.checklist.GetCheckedItems())
+        if 0 in checked and self.check_var == False:
+            self.checklist.Check(1, check=True)
+            self.checklist.Check(2, check=True)
+            self.checklist.Check(3, check=True)
+            self.checklist.Check(4, check=True)
+            self.checklist.Check(5, check=True)
+            self.checklist.Check(6, check=True)
+            self.check_var = True
+        if 0 not in checked and self.check_var == True:
+            self.checklist.Check(1, check=False)
+            self.checklist.Check(2, check=True)
+            self.checklist.Check(3, check=False)
+            self.checklist.Check(4, check=False)
+            self.checklist.Check(5, check=False)
+            self.checklist.Check(6, check=False)
+            self.check_var = False
+        return
+
     #handles choice box event.
     def _on_mode_change(self, evt):
         evt.GetEventObject()
         (platform, world_version) = plat
         #hides some UI elements when switching states.
-        if self._mode.GetString(self._mode.GetSelection()) == "Randomize LootTables":
+        if self._mode.GetString(self._mode.GetSelection()) == "Randomize":
+            self.spin_ctrl.Show()
+            self._label_txt5.Show()
             self._sel_loot.Hide()
             self._label_txt3.Hide()
             self._radio1.Show()
-        else:
+            self.loot_textbox.Hide()
+            self._label_txt4.Hide()
+            self.Layout()
+            self.Fit()
+
+        elif self._mode.GetString(self._mode.GetSelection()) == "Custom":
+            self._sel_loot.Hide()
+            self._label_txt3.Hide()
+            self._radio1.Hide()
+            self.loot_textbox.Show()
+            self._label_txt4.Show()
+            self._label_txt5.Show()
+            self.spin_ctrl.Show()
+            self.Layout()
+            self.Fit()
+
+        elif self._mode.GetString(self._mode.GetSelection()) == "Vanilla":
             #loops over the loot tables and regenerates the platform and version.
             loot_table_src = {}
             self._sel_loot.Clear()
@@ -272,11 +648,21 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
             self._sel_loot.Show()
             self._label_txt3.Show()
             self._radio1.Hide()
+            self.loot_textbox.Hide()
+            self._label_txt4.Hide()
+            self.spin_ctrl.Show()
+            self._label_txt5.Show()
+            self.Layout()
+            self.Fit()
+
+        else:
+            print ("(ERROR!) Invlaid mode selected! = "+str(self._mode.GetString(self._mode.GetSelection())))
 
         self._mode_description.SetLabel(
             operation_modes[self._mode.GetString(self._mode.GetSelection())]
         )
-        self._mode_description.Fit()
+        
+        self.Fit()
         self.Layout()
         evt.Skip()
 
@@ -290,7 +676,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         radiobox_sel = self._radio1.GetString(self._radio1.GetSelection())
 
         #higher quality loot this is 100% what vanilla uses its too OP...
-        if radiobox_sel == "Epic Quality":
+        if radiobox_sel == quality_names[0]:
 
             #loops over the loot tables and regenerates the list with the OP tables.
             loot_table_src = {}
@@ -299,7 +685,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                 self._sel_loot.Append(os.path.basename(tbls))
 
         #lower quality loot thsi removes some tables that are too OP.
-        elif radiobox_sel == "Normal Quality":
+        elif radiobox_sel == quality_names[1]:
 
             #loops over the loot tables and regenerates the list without the OP tables.
             loot_table_src = {}
@@ -311,6 +697,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         #sets selection of the loot table to 0 index.
         self._sel_loot.SetSelection(0)
 
+    #Not sure where this is from may be left over junk code? from something. #Leaving to be safe.
     def _on_pick_block_button(self, evt):
         """Set up listening for the block click"""
         self._show_pointer = True
@@ -341,40 +728,10 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         except:
             return False
 
-    #old loot table download code from an ealier test.
-    # def _loot_tables_from_link(self, zip_file_url):
-        # resp = urlopen(zip_file_url)
-        # zipfile = ZipFile(BytesIO(resp.read()))
-        # r = requests.get(zip_file_url)
-        # z = zipfile.ZipFile(io.BytesIO(r.content))
-        # z.extractall("/plugins")
-        # return zipfile.namelist()
-
     #gets universal loot_tables in the case where all other methods failed and this
     #takes the hardcoded copy and minimizes it to work for as many platforms & versions as possible.
     def _get_universal_tables(self, loot_tables, mc_v):
         (mc_platform, mc_version) = mc_v
-
-        #tuple versions.
-        #remove these loot strings durring universal loot table conversion.
-        remove_tables = {
-            "loot_tables/chests/bastion_bridge.json": None,
-            "loot_tables/chests/bastion_hoglin_stable.json": None,
-            "loot_tables/chests/bastion_other.json": None,
-            "loot_tables/chests/bastion_treasure.json": None,
-            "loot_tables/chests/ruined_portal.json": None,
-            "loot_tables/chests/jungle_temple_dispenser.json":None,
-            "loot_tables/chests/dispenser_trap.json": None,
-            "loot_tables/chests/shipwreck_map.json": None,
-            "loot_tables/chests/shipwreck.json": None,
-            "loot_tables/chests/shipwrecktreasure.json": None,
-            "loot_tables/chests/shipwreck_treasure.json": None,
-            "loot_tables/chests/shipwreck_supply.json": None,
-            "loot_tables/chests/shipwrecksupply.json": None,
-            "loot_tables/chests/monster_room.json": None,
-            "loot_tables/chests/village_two_room_house.json": None,
-            "loot_tables/chests/village_blacksmith.json": None
-        }
 
         #gets a string version of the the world format version.
         version_data = self._get_mcstr_version(mc_version)
@@ -386,9 +743,9 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         for loot_table in loot_tables:
             loot_table = self._parse_loot_str(loot_table)
 
-            #handles the case where some loot tables from java may need to be renamed for bedrock.
-            if loot_table in remove_tables:
-                universal_tables.append(remove_tables[loot_table])
+            #handles the case where some loot tables from java may need to be renamed for bedrock or removed.
+            if loot_table in universal_remove_tables:
+                universal_tables.append(universal_remove_tables[loot_table])
 
             else:
                 universal_tables.append(loot_table)
@@ -401,44 +758,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
     def _get_bedrock_tables(self, loot_tables, mc_v):
         (mc_platform, mc_version) = mc_v
 
-        #TABLES ADDED OR REMOVED: NONE
-        # Cave & Cliffs
-        # BEDROCK: (1,17,0)
-
-        # Nether Update
-        # BEDROCK: (1,16,0)
-
-        # Buzzy Bees
-        # BEDROCK: (1,14,0)
-
-        # Village & Pillage
-        # BEDROCK: (1,11,0)
-
-        # Update Aquatic
-        # BEDROCK: (1,5,0)
-
-        #tables to convert file paths of loot tables from java to bedrock format.
-        java_to_bedrock = {
-            "loot_tables/chests/jungle_temple_dispenser.json": "loot_tables/chests/dispenser_trap.json",
-            "loot_tables/chests/shipwreck_map.json": "loot_tables/chests/shipwreck.json",
-            "loot_tables/chests/shipwreck_supply.json": "loot_tables/chests/shipwrecksupply.json",
-            "loot_tables/chests/shipwreck_treasure.json": "loot_tables/chests/shipwrecktreasure.json"
-        }
-
-        #tuple versions.
-        #remove these loot strings durring universal loot table conversion.
-        remove_tables = {
-            "pre_1.16.0":{
-                "loot_tables/chests/bastion_bridge.json": None,
-                "loot_tables/chests/bastion_hoglin_stable.json": None,
-                "loot_tables/chests/bastion_other.json": None,
-                "loot_tables/chests/bastion_treasure.json": None,
-                "loot_tables/chests/ruined_portal.json": None
-            }
-        }
-
-        #mc_version returns a tuple on Minecraft Bedrock worlds.
-
+        #mc_version returns a tuple on Minecraft Bedrock worlds when mc_platform == bedrock.
         #gets a string version of the the world format version from a tuple version.
         version_data = self._get_mcstr_version(mc_version)
 
@@ -449,15 +769,26 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         for loot_table in loot_tables:
             loot_table = self._parse_loot_str(loot_table)
 
-            #handles the case if some loot tables didn't exist or needed to be renamed in ('bedrock','1.16.0') #nether update
-            if StrictVersion(version_data) < StrictVersion('1.16.0') and loot_table in remove_tables['pre_1.16.0']:
-                bedrock_tables.append(remove_tables['pre_1.16.0'][loot_table])
+            #handles the case if some loot tables didn't exist ('bedrock','1.16.0') #nether update
+            if StrictVersion(version_data) < StrictVersion('1.16.0') and loot_table in bedrock_remove_tables['pre_1.16.0']:
+                bedrock_tables.append(bedrock_remove_tables['pre_1.16.0'][loot_table])
 
-            #handles the case where some loot tables from java may need to be renamed for bedrock.
-            elif loot_table in java_to_bedrock:
-                bedrock_tables.append(java_to_bedrock[loot_table])
+            #handles the case if some loot tables didn't exist ('bedrock','1.10.0') #busy bees update
+            if StrictVersion(version_data) < StrictVersion('1.10.0') and loot_table in bedrock_remove_tables['pre_1.10.0']:
+                bedrock_tables.append(bedrock_remove_tables['pre_1.10.0'][loot_table])
+
+            #handles the case if some loot tables didn't exist ('bedrock','1.4.0') #ocean aquatic update
+            if StrictVersion(version_data) < StrictVersion('1.4.0') and loot_table in bedrock_remove_tables['pre_1.4.0']:
+                bedrock_tables.append(bedrock_remove_tables['pre_1.4.0'][loot_table])
+
+            #handles fast list replacement for case where loot table existed or didn't exist in all versions or was renamed.
+            if loot_table in bedrock_remove_tables['*'] and loot_table in bedrock_tables:
+                bedrock_tables = np.array(bedrock_tables)
+                bedrock_tables = np.where(bedrock_tables == loot_table, bedrock_remove_tables['*'][loot_table], bedrock_tables)
+                bedrock_tables = bedrock_tables.tolist()
 
             else:
+                #handles the case where the loot table existed in all versions and platforms.
                 bedrock_tables.append(loot_table)
 
         #removes none values for cleanup.
@@ -468,79 +799,49 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
     def _get_java_tables(self, loot_tables, mc_v):
         (mc_platform, mc_version) = mc_v
 
-        # # Cave & Cliffs
-        # # JAVA: 2724
+        #quick note you will notice no hardcoded copy of java's loot tables are provided in this method.
+        #this is because java is data driven from Minecraft Bedrocks loot tables using my conversion method.
+        #_get_java_tables(self, loot_tables_list, (mc_platform, mc_version)) 
+        #takes a bedrock loot table list or a universal loot table list and converts it to java.
 
-        # # Nether Update
-        # # JAVA: 2566
+        #filters out loot_tables that java doesn't support.
+        java_tables = []
 
-        # # Buzzy Bees
-        # # JAVA: 2225
+        #mc_version returns an interger on Minecraft Java worlds.
 
-        # # Village & Pillage
-        # # JAVA: 1952
+        #handles the conversion.
+        for loot_table in loot_tables:
+            loot_table = self._parse_loot_str(loot_table)
 
-        # # Update Aquatic
-        # # JAVA: 1519
+            #handles the case if some loot tables didn't exist ('java',2566) #nether update
+            if mc_version < 2566 and loot_table in java_remove_tables['pre_2566']:
+                java_tables.append(java_remove_tables['pre_2566'][loot_table])
 
-        # #tables to convert file paths of loot tables from bedrock to java format.
-        # bedrock_to_java = {
-            # "loot_tables/chests/dispenser_trap.json": "loot_tables/chests/jungle_temple_dispenser.json",
-            # "loot_tables/chests/shipwreck.json": "loot_tables/chests/shipwreck_map.json",
-            # "loot_tables/chests/shipwrecksupply.json": "loot_tables/chests/shipwreck_supply.json",
-            # "loot_tables/chests/shipwrecktreasure.json": "loot_tables/chests/shipwreck_treasure.json"
-        # }
+            #handles the case if some loot tables didn't exist ('java',2225) #busy bees update
+            if mc_version < 2225 and loot_table in java_remove_tables['pre_2225']:
+                java_tables.append(java_remove_tables['pre_2225'][loot_table])
 
-        # #tuple versions.
-        # #remove these loot strings durring universal loot table conversion.
-        # remove_tables = [
-            # "loot_tables/chests/monster_room.json", #does not exist on java.
-            # "loot_tables/chests/village_two_room_house.json", #does not exist on java.
-            # "loot_tables/chests/village_blacksmith.json" #removed in 1.14
-        # ]
+            #handles the case if some loot tables didn't exist ('java',1952) #village & pillage update
+            if mc_version < 1952 and loot_table in java_remove_tables['pre_1952']:
+                java_tables.append(java_remove_tables['pre_1952'][loot_table])
 
-        # #tuple versions.
-        # #remove these loot strings durring universal loot table conversion.
-        # remove_tables = {
-            # 1952:{
-                # "loot_tables/chests/village_blacksmith.json": None
-            # },
-            # 1519:{
-            
-            # }
-        # }
+            #handles the case if some loot tables didn't exist ('java',1519) #ocean aquatic update
+            if mc_version < 1519 and loot_table in java_remove_tables['pre_1519']:
+                java_tables.append(java_remove_tables['pre_1519'][loot_table])
 
-        # #filters out loot_tables that java doesn't support.
-        # java_tables = []
+            #handles fast list replacement for case where loot table existed or didn't exist in all versions or was renamed.
+            if loot_table in java_remove_tables['*'] and loot_table in java_tables:
+                java_tables = np.array(java_tables)
+                java_tables = np.where(java_tables == loot_table, java_remove_tables['*'][loot_table], java_tables)
+                java_tables = java_tables.tolist()
 
-        # #mc_version returns an interger on Minecraft Java worlds.
+            #handles the case where the loot table existed in all versions and platforms.
+            else:
+                java_tables.append(loot_table)
 
-        # #handles the conversion.
-        # for loot_table in loot_tables:
-            # loot_table = self._parse_loot_str(loot_table)
-
-            # #Minecraft Java version 1952 = Village & Pillage.
-            # #only instance of a loot_table being removed from java 1.14.0 #village_blacksmith.json
-            # if (mc_version <= 1952 and loot_table == remove_tables[2]:
-                # java_tables.append(None)
-
-            # if (mc_version <= 1952 and loot_table == remove_tables[2]:
-                # java_tables.append(None)
-
-            # #haqndles removing some loot tables that don't exist on java.
-            # elif loot_table in remove_tables and loot_table != remove_tables[2]:
-                # java_tables.append(None)
-
-            # #handles renaming loot tables.
-            # elif loot_table in bedrock_to_java:
-                # java_tables.append(bedrock_to_java[loot_table])
-
-            # else:
-                # java_tables.append(loot_table)
-
-        # #removes None values for clean up.
-        # java_tables = [x for x in java_tables if x is not None]
-        # return java_tables
+        #removes None values for clean up.
+        java_tables = [x for x in java_tables if x is not None]
+        return java_tables
 
     #gets a string version of MC in 1.16.2 format from a tuple (1, 16, 2) also supports int format 1297 as input.
     def _get_mcstr_version(self, tuple_version):
@@ -551,7 +852,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
             str_vr = str(tuple_version)
             return str_vr
 
-    #parses the loot table strings and cleans them up.
+    #parses the loot table strings and cleans them.
     def _parse_loot_str(self, txtstr):
         try:
             fixed_str = txtstr.replace("\\","/")
@@ -608,6 +909,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                         loot_drives.append(loot_table)
 
                 found_drives.append(drive_type)
+
             except:
                 not_found_drives.append(drive_type)
 
@@ -622,104 +924,12 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         #note this temp ,folder is removed when the operation is complete.
         self._get_temp_folder("temp")
 
-        #quick note you will notice no hardcoded copy of java's loot tables are provided in this method.
-        #this is because java is data driven from Minecraft Bedrocks loot tables using my conversion method below.
-        #_get_java_tables(self, loot_tables_list, (mc_platform, mc_version))
-
-        #this table is hardcoded for bedrock, for the edge case that all other loot tables extractions fail for bedrock.
-        loots_hardcoded = [
-            "loot_tables/chests/abandoned_mineshaft.json",
-            "loot_tables/chests/bastion_bridge.json",
-            "loot_tables/chests/bastion_hoglin_stable.json",
-            "loot_tables/chests/bastion_other.json",
-            "loot_tables/chests/bastion_treasure.json",
-            "loot_tables/chests/buriedtreasure.json",
-            "loot_tables/chests/desert_pyramid.json",
-            "loot_tables/chests/dispenser_trap.json",
-            "loot_tables/chests/end_city_treasure.json",
-            "loot_tables/chests/igloo_chest.json",
-            "loot_tables/chests/jungle_temple.json",
-            "loot_tables/chests/monster_room.json",
-            "loot_tables/chests/nether_bridge.json",
-            "loot_tables/chests/pillager_outpost.json",
-            "loot_tables/chests/ruined_portal.json",
-            "loot_tables/chests/shipwreck.json",
-            "loot_tables/chests/shipwrecksupply.json",
-            "loot_tables/chests/shipwrecktreasure.json",
-            "loot_tables/chests/simple_dungeon.json",
-            "loot_tables/chests/spawn_bonus_chest.json",
-            "loot_tables/chests/stronghold_corridor.json",
-            "loot_tables/chests/stronghold_crossing.json",
-            "loot_tables/chests/stronghold_library.json",
-            "loot_tables/chests/underwater_ruin_big.json",
-            "loot_tables/chests/underwater_ruin_small.json",
-            "loot_tables/chests/village_blacksmith.json",
-            "loot_tables/chests/village_two_room_house.json",
-            "loot_tables/chests/woodland_mansion.json",
-            "loot_tables/chests/village/village_armorer.json",
-            "loot_tables/chests/village/village_butcher.json",
-            "loot_tables/chests/village/village_cartographer.json",
-            "loot_tables/chests/village/village_desert_house.json",
-            "loot_tables/chests/village/village_fletcher.json",
-            "loot_tables/chests/village/village_mason.json",
-            "loot_tables/chests/village/village_plains_house.json",
-            "loot_tables/chests/village/village_savanna_house.json",
-            "loot_tables/chests/village/village_shepherd.json",
-            "loot_tables/chests/village/village_snowy_house.json",
-            "loot_tables/chests/village/village_taiga_house.json",
-            "loot_tables/chests/village/village_tannery.json",
-            "loot_tables/chests/village/village_temple.json",
-            "loot_tables/chests/village/village_toolsmith.json",
-            "loot_tables/chests/village/village_weaponsmith.json"
-        ]
-
-        #this table is hardcoded for bedrock & java - techically universally supported btw both platforms.
-        #for the edge case that all other loot tables extraction methods fail?
-        loots_universal_table = [
-            "loot_tables/chests/abandoned_mineshaft.json",
-            "loot_tables/chests/bastion_bridge.json",
-            "loot_tables/chests/bastion_hoglin_stable.json",
-            "loot_tables/chests/bastion_other.json",
-            "loot_tables/chests/bastion_treasure.json",
-            "loot_tables/chests/buriedtreasure.json",
-            "loot_tables/chests/desert_pyramid.json",
-            "loot_tables/chests/end_city_treasure.json",
-            "loot_tables/chests/igloo_chest.json",
-            "loot_tables/chests/jungle_temple.json",
-            "loot_tables/chests/nether_bridge.json",
-            "loot_tables/chests/pillager_outpost.json",
-            "loot_tables/chests/ruined_portal.json",
-            "loot_tables/chests/simple_dungeon.json",
-            "loot_tables/chests/spawn_bonus_chest.json",
-            "loot_tables/chests/stronghold_corridor.json",
-            "loot_tables/chests/stronghold_crossing.json",
-            "loot_tables/chests/stronghold_library.json",
-            "loot_tables/chests/underwater_ruin_big.json",
-            "loot_tables/chests/underwater_ruin_small.json",
-            "loot_tables/chests/woodland_mansion.json",
-            "loot_tables/chests/village/village_armorer.json",
-            "loot_tables/chests/village/village_butcher.json",
-            "loot_tables/chests/village/village_cartographer.json",
-            "loot_tables/chests/village/village_desert_house.json",
-            "loot_tables/chests/village/village_fletcher.json",
-            "loot_tables/chests/village/village_mason.json",
-            "loot_tables/chests/village/village_plains_house.json",
-            "loot_tables/chests/village/village_savanna_house.json",
-            "loot_tables/chests/village/village_shepherd.json",
-            "loot_tables/chests/village/village_snowy_house.json",
-            "loot_tables/chests/village/village_taiga_house.json",
-            "loot_tables/chests/village/village_tannery.json",
-            "loot_tables/chests/village/village_temple.json",
-            "loot_tables/chests/village/village_toolsmith.json",
-            "loot_tables/chests/village/village_weaponsmith.json"
-        ]
-
         #gets any local loot_tables installed.
         loots_local = self.get_all_loot_paths()
         loot_paths = None
 
         #get the loot table for the correct platform, java, bedrock, or unknown.
-        if mc_platform == 'java':
+        if mc_platform == platform_names[0]:
             if bool(loots_local):
                 print ("Defaulting to local tables...")
                 #takes bedrock tables converts them to java tables.
@@ -736,7 +946,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                 #takes hardcoded bedrock tables converts them to java tables because all other methods failed.
                 loot_paths = self._get_java_tables(loots_hardcoded, (mc_platform, mc_version))
 
-        elif mc_platform == 'bedrock':
+        elif mc_platform == platform_names[1]:
             if bool(loots_local):
                 print ("Defaulting to local tables...")
                 loot_paths = self._get_bedrock_tables(loots_local, (mc_platform, mc_version))
@@ -831,15 +1041,75 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
     def _bad_chunk(self, x, y, z):
         print ("Chunk does not exist or can't be read at [X, Y, Z]: "+str([x, y, z]))
 
+    #prints a no selection error to the console.
     def _no_selected_error(self):
         print ("(ERROR!) There were no containers selected!")
         print ("Please try again...")
 
+    def _parse_custom_loot_tables(self, table_str):
+        if isinstance(str, table_str):
+            table_str = str(table_str)
+            if table_str.count(",") > 0:
+                if ", " in table_str:
+                    return self._parse_custom_loot_table(table_str.split(", "))
+                elif "," in table_str:
+                    return self._parse_custom_loot_table(table_str.split(" "))
+                else:
+                    print ("ERROR! Invalid input for custom loot tables (Must have valid formatting!)")
+                    return None
+            else:
+                if len(table_str) > 0:
+                    if "loot_tables/" in table_str and ".json" in table_str:
+                        return table_str
+                    else:
+                        if ".json" not in table_str:
+                            print ("(ERROR!) Missing .json at the end the loot table path.")
+                            return None
+                        elif "loot_tables/" not in table_str:
+                            print ("(ERROR!) Missing loot_tables/ at the start of loot table path.")
+                            return None
+                        else:
+                            print ("(ERROR!) Invalid formatting!")
+                else:
+                    return None
+
+        elif isinstance(list, table_str):
+            table_list = table_str
+            weighted_tables = {}
+            for table_strs in table_list:
+                if "%" in table_strs:
+                    weighted_tables[table_strs.split("%")[1]] = table_strs.split("%")[0]
+                else:
+                    weighted_tables[table_strs] = None
+            return weighted_tables
+        else:
+            return None
+
+
+
     #main preform method.
     def _set_loot_tables(self):
-        print ("gathering loot_tables")
+        print ("Gathering loot_tables")
         op_mode = self._mode.GetString(self._mode.GetSelection())
+        empty_mode = self._ignore_empty.GetValue()
+        selected_custom_table = self.loot_textbox.GetRange(0, 1000)
         selected_table = "loot_tables/chests/"+str(self._sel_loot.GetString(self._sel_loot.GetSelection()))
+        table_str = " "
+        weighted_tables = False
+
+        #gets a dict, none or a string.
+        # custom_loot_tables = self._parse_custom_loot_tables(selected_table)
+
+        # if self._mode.GetString(self._mode.GetSelection()):
+            # if isinstance(str, custom_loot_tables):
+                # selected_table = custom_loot_tables
+                # weighted_tables = False
+
+            # if isinstance(dict, custom_loot_tables):
+                # weighted_tables = True
+
+            # if isinstance(None, custom_loot_tables):
+                # print ("(ERROR!) Custom loot table path is blank!")
 
         #gets the world instance and platform and version.
         world = self.world
@@ -872,10 +1142,13 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         #formats the list of all block entity ids.
         all_block_entities = [indexitem for listitem in all_block_entities for indexitem in listitem]
 
+        #mode 0 = Set Random, mode 1 = Set Vanilla, mode 2 = Set Custom Path.
+        op_modes = list(operation_modes.keys())
+
         #the randomized loot tables operation is handled here.
-        if op_mode == "Randomize LootTables":
+        if op_mode == op_modes[0]:
             #start message.
-            print ("Selected mode: 'Randomize LootTables'")
+            print ("Selected mode: 'Randomize'")
             print ()
             print ("Started editing containers...")
 
@@ -888,35 +1161,32 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                     #loops over the current selection box's x, y, z coordinates.
                     for (x, y, z) in box:
                         #handles the case where a chunk may not be able to be read.
-                        try:
-                            #gets info about the block (the_block, nbt_data, water_logged_blocks)
-                            (block, block_entity, extras) = self._get_vanilla_block(dim, world, x, y, z, trans)
-                            
-                            #checks if the block has a block entity or not.
-                            if block_entity is not None:
+                        #gets info about the block (the_block, nbt_data, water_logged_blocks)
+                        (block, block_entity, extras) = self._get_vanilla_block(dim, world, x, y, z, trans)
+                        
+                        #checks if the block has a block entity or not.
+                        if block_entity is not None:
 
-                                #checks if the "Items" tag is in the block_entity,
-                                #modifies and creates new nbt in the block_entity.
-                                if "Items" in block_entity.nbt:
-                                    block_entity.nbt["Items"] = TAG_List([])
-                                    block_entity.nbt["LootTable"] = TAG_String(random.choice(list(loot_table_src.values())))
-                                    block_entity.nbt["LootTableSeed"] = TAG_Long(0)
+                            #checks if the "Items" tag is in the block_entity,
+                            #modifies and creates new nbt in the block_entity.
+                            if "Items" in block_entity.nbt:
+                                block_entity.nbt["Items"] = TAG_List([])
+                                block_entity.nbt["LootTable"] = TAG_String(random.choice(list(loot_table_src.values())))
+                                block_entity.nbt["LootTableSeed"] = TAG_Long(loot_table_seed)
 
-                                    #sets the block_entity block with updated NBT.
-                                    world.set_version_block(x, y, z, dim, mc_version, block, block_entity)
+                                #sets the block_entity block with updated NBT.
+                                world.set_version_block(x, y, z, dim, mc_version, block, block_entity)
 
-                                    #counts + 1 for every block_entity it finds.
-                                    containers_count+=1
+                                #counts + 1 for every block_entity it finds.
+                                containers_count+=1
 
-                                    #adds the block_entity_id to a list.
-                                    if block_entity_id not in containers_found:
-                                        containers_found.append(block_entity_id)
+                                #adds the block_entity_id to a list.
+                                block_entity_id = self._get_be_id(block_entity)
+                                if block_entity_id not in containers_found:
+                                    containers_found.append(block_entity_id)
 
-                                    #updates the chunk.
-                                    self._refresh_chunk(dim, world, x, z)
-                        except:
-                            #prints an error message about the chunk.
-                            self._bad_chunk(x, y, z)
+                                #updates the chunk.
+                                self._refresh_chunk(dim, world, x, z)
 
             elif len(sel_block_entities) > 0:
                 print ("Wildcard: False")
@@ -937,7 +1207,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                                 if block_entity_id in sel_block_entities:
                                     block_entity.nbt["Items"] = TAG_List([])
                                     block_entity.nbt["LootTable"] = TAG_String(random.choice(list(loot_table_src.values())))
-                                    block_entity.nbt["LootTableSeed"] = TAG_Long(0)
+                                    block_entity.nbt["LootTableSeed"] = TAG_Long(loot_table_seed)
 
                                     #sets the tile_entity block with updated NBT.
                                     world.set_version_block(x, y, z, dim, mc_version, block, block_entity)
@@ -959,9 +1229,9 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                 self._no_selected_error()
 
         #the set vanilla loot table operation is handled here.
-        elif op_mode == "Set Vanilla LootTables":
+        elif op_mode == op_modes[1]:
             #start message.
-            print ("Selected mode: 'Set Vanilla LootTables'")
+            print ("Selected mode: 'Vanilla'")
             print ()
             print ("Started editing containers...")
 
@@ -981,7 +1251,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                             if "Items" in block_entity.nbt:
                                 block_entity.nbt["Items"] = TAG_List([])
                                 block_entity.nbt["LootTable"] = TAG_String(selected_table)
-                                block_entity.nbt["LootTableSeed"] = TAG_Long(0)
+                                block_entity.nbt["LootTableSeed"] = TAG_Long(loot_table_seed)
 
                                 #sets the tile_entity block with updated NBT.
                                 world.set_version_block(x, y, z, dim, mc_version, block, block_entity)
@@ -1011,7 +1281,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                             if block_entity_id in sel_block_entities:
                                 block_entity.nbt["Items"] = TAG_List([])
                                 block_entity.nbt["LootTable"] = TAG_String(selected_table)
-                                block_entity.nbt["LootTableSeed"] = TAG_Long(0)
+                                block_entity.nbt["LootTableSeed"] = TAG_Long(loot_table_seed)
 
                                 #sets the tile_entity block with updated NBT.
                                 world.set_version_block(x, y, z, dim, mc_version, block, block_entity)
@@ -1025,6 +1295,86 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
 
                                 #updates the chunk.
                                 self._refresh_chunk(dim, world, x, z)
+
+            else:
+                self._no_selected_error()
+
+        #the set custom loot table operation is handled here.
+        elif op_mode == op_modes[2]:
+            #start message.
+            print ("Selected mode: 'Custom'")
+            print ()
+            print ("Started editing containers...")
+
+            #handles the wildcard case where a user selects "All Containers" this will find all block entities with an "Items" tag and add loot tables.
+            if "*" in sel_block_entities:
+                print ("Wildcard mode: True")
+                for box in sel.merge_boxes().selection_boxes:
+                    for (x, y, z) in box:
+                        #gets info about the block (the_block, nbt_data, water_logged_blocks.)
+                        (block, block_entity, extras) = self._get_vanilla_block(dim, world, x, y, z, trans)
+                        if block_entity is not None:
+
+                            block_entity_id = self._get_be_id(block_entity)
+
+                            #checks if the "Items" tag is in the block_entity,
+                            #modifies and creates new nbt in the block_entity.
+                            if "Items" in block_entity.nbt:
+                                block_entity.nbt["Items"] = TAG_List([])
+                                block_entity.nbt["LootTable"] = TAG_String(selected_custom_table)
+                                block_entity.nbt["LootTableSeed"] = TAG_Long(loot_table_seed)
+
+                                #sets the tile_entity block with updated NBT.
+                                world.set_version_block(x, y, z, dim, mc_version, block, block_entity)
+
+                                #counts + 1 for every block_entity it finds.
+                                containers_count+=1
+
+                                #adds the block_entity_id to a list.
+                                if block_entity_id not in containers_found:
+                                    containers_found.append(block_entity_id)
+
+                                #updates the chunk.
+                                self._refresh_chunk(dim, world, x, z)
+
+            elif len(sel_block_entities) > 0:
+                print ("Wildcard mode: False")
+                for box in sel.merge_boxes().selection_boxes:
+                    for (x, y, z) in box:
+                        #gets info about the block (the_block, nbt_data, water_logged_blocks.)
+                        (block, block_entity, extras) = self._get_vanilla_block(dim, world, x, y, z, trans)
+                        if block_entity is not None:
+
+                            #checks if the block_entity.id is in the list of selected block_entities,
+                            #modifies and creates new nbt in the block_entity.
+                            block_entity_id = self._get_be_id(block_entity)
+
+                            print (empty_mode)
+                            if block_entity_id in sel_block_entities:
+                                if empty_mode == True:
+                                    print ("items count: "+str(len(block_entity.nbt["Items"])))
+                                    if len(list(block_entity.nbt["Items"].value)) < 1:
+                                        print ("ran!: "+str([x, y, z]))
+                                        block_entity.nbt["LootTable"] = TAG_String(selected_custom_table)
+                                        block_entity.nbt["LootTableSeed"] = TAG_Long(loot_table_seed)
+                                        block_entity.nbt["Items"] = TAG_List([])
+                                        #sets the tile_entity block with updated NBT.
+                                        world.set_version_block(x, y, z, dim, mc_version, block, block_entity)
+                                        #counts + 1 for every block_entity it finds.
+                                        containers_count+=1
+
+                                        #adds the block_entity_id to a list.
+                                        if block_entity_id not in containers_found:
+                                            containers_found.append(block_entity_id)
+
+                                        #updates the chunk.
+                                        self._refresh_chunk(dim, world, x, z)
+                                else:
+                                    block_entity.nbt["LootTable"] = TAG_String(selected_custom_table)
+                                    block_entity.nbt["LootTableSeed"] = TAG_Long(loot_table_seed)
+                                    block_entity.nbt["Items"] = TAG_List([])
+                                    #sets the tile_entity block with updated NBT.
+                                    world.set_version_block(x, y, z, dim, mc_version, block, block_entity)
 
             else:
                 self._no_selected_error()
@@ -1056,6 +1406,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                 print (temp_path)
                 shutil.rmtree(temp_path)
             except:
+                print ("(ERROR!) with removing: "+str(temp_path))
                 pass
 
 #simple export options.
