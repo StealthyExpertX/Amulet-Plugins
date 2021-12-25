@@ -43,6 +43,10 @@ import numpy as np
 import urllib.request
 import wx
 import ast
+
+import math
+from math import remainder
+
 import json
 import os
 import string
@@ -97,6 +101,7 @@ operation_modes = {
     "Randomize": "Set containers with randomized vanilla loot tables.",
     "Vanilla": "Set containers with a selected vanilla loot table name.",
     "Custom": "Set containers with a custom inputed loot table path.",
+    "Remove LootTables": "Remove loot table nbt in containers.",
 }
 
 loot_table_seed = 0
@@ -376,6 +381,72 @@ chkdict = {
 plat = None
 loot_table_src = {}
 
+class TabOne(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        
+        tab1text = "This plugin allows you to do loot table based operations,\n"\
+        "- 'Vanilla' which allows you to set vanilla loot tables using the path list supplied in this plugin."\
+        "- 'Random' which allows you to set fully random loot tables."\
+        "- 'Custom' which allows you to set custom loot table paths supplied by the user."\
+        "- 'Remove' which allows you to remove custom loot tables from containers in the selection."\
+        "- 'Clear' which allows you to remove items from containers in the selection.\n"
+        "- 'Replace' which allows you to replace loot tables in containers in the selection.\n"
+        t = wx.StaticText(self, 0, tab1text)
+        self._sizer2 = wx.FlexGridSizer(0, 4, 0, 4) #verticle shape top to bottom for main dialog.
+        self._sizer2.Add(t, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 2)
+        self.SetSizer(self._sizer2)
+
+
+        "\n           MULTIBLES"\
+        "\n           you can use commas or colons or semi colons to seperate more then one loot table."\
+        "\n           example (1): loot_tables/custom/loot_table_1.json, loot_tables/custom/loot_table_2.json"\
+        "\n           example (2): loot_tables/custom/loot_table_1.json: loot_tables/custom/loot_table_2.json"\
+        "\n           example (3): loot_tables/custom/loot_table_1.json; loot_tables/custom/loot_table_2.json\n"\
+        # "\n           WEIGHTED RANDOM"\
+        # "\n           you can use % or = characters prefixing followed by a chance for each loot table to assign a random chance for that table to be used."\
+        # "\n           if you do not assign a % or = chance to a loot table it will have the remaining chance will be applied to all objects."\
+        # "\n           note all %'s used must add upto 100% and not above 100% as this is invalid."\
+        # "\n           example (1): 10%loot_tables/custom/loot_table_1.json, 90%loot_tables/custom/loot_table_2.json"\
+        # "\n           example (2): 10=loot_tables/custom/loot_table_1.json, 90=loot_tables/custom/loot_table_2.json\n"\
+        # "\n           VARIABLES"\
+        # "\n           you can use variables to assign cool functions to your strings such as\n"\
+        # "\n           <RANDOM> which will insert any random loot table."\
+        # "\n           <RANDOM_RARE> which will insert a random loot table from high quality loot tables list."\
+        # "\n           <RANDOM_COMMON> which will insert a random loot table from high quality loot tables."\
+        # "\n           <RANDOM_VILLAGE> which will insert a random loot table from village loot tables."\
+        # "\n           <RANDOM_OCEAN> which will insert a random loot table from ocean loot tables."\
+        # "\n           <RANDOM_NETHER> which will insert a random loot table from nether loot tables."\
+        # "\n           example (1): <RANDOM>, loot_tables/custom/loot_table_2.json"\
+        # "\n           example (2): loot_tables/custom/loot_table_1.json, <RANDOM_RARE>"\
+        # "\n           example (3): <RANDOM_COMMON>"\
+        # "\n           example (4): 30%loot_tables/custom/loot_table_1.json, 70%<RANDOM_OCEAN>\n"
+
+class TabTwo(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+
+        tab1text ="\nyou can use a single loot table as well like this. \nexample: loot_tables/custom/loot_table_1.json"\
+
+        t = wx.StaticText(self, 0, tab1text)
+        self._sizer2 = wx.FlexGridSizer(0, 4, 0, 4) #verticle shape top to bottom for main dialog.
+        self._sizer2.Add(t, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 2)
+        self.SetSizer(self._sizer2)
+
+class TabThree(wx.Panel):
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        tab1text ="you can use commas or colons or semi colons to seperate more then one loot table.\n"\
+        "usage examples:\n"\
+        "loot_tables/custom/loot_table_1.json, loot_tables/custom/loot_table_2.json\n"\
+        "loot_tables/custom/loot_table_1.json: loot_tables/custom/loot_table_2.json\n"\
+        "loot_tables/custom/loot_table_1.json; loot_tables/custom/loot_table_2.json"
+
+        t = wx.StaticText(self, 0, tab1text)
+        self._sizer2 = wx.FlexGridSizer(0, 4, 0, 4) #verticle shape top to bottom for main dialog.
+        self._sizer2.Add(t, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 2)
+        self.SetSizer(self._sizer2)
+
 class SetLootTables(wx.Panel, DefaultOperationUI):
     def __init__(
         self,
@@ -387,14 +458,19 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
 
         platform = world.level_wrapper.platform
         world_version = world.level_wrapper.version
+        
+        #global variables, yes I know this is bad but needed for the context to get it working!
         global check_var
         global plat #plat is a global platform & version tuple object.
         global loot_table_src #made loot table source that gets generated to populate the list.
         global sel_block_entities #selected block entities to fill.
         global all_block_entities #all the block entities as one object.
         global startup
+        global text_change_bool
+
         self.check_var = False
         self.startup = True
+        self.text_change_bool = True
 
         #sets platform and world version as the plat object.
         plat = (platform, world_version)
@@ -412,12 +488,47 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         self._sizer = wx.FlexGridSizer(0, 1, 2, 0) #verticle shape top to bottom for main dialog.
         self.SetSizer(self._sizer)
 
+        #info button
+        top_sizer2 = wx.BoxSizer(wx.HORIZONTAL)
+        self._sizer.Add(top_sizer2, 0, wx.EXPAND | wx.ALL, 5)
+
+        help_button = wx.BitmapButton(
+            self, bitmap=image.icon.tablericons.help.bitmap(22, 22)
+        )
+        top_sizer2.Add(help_button, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 1)
+
         #loads the default options to be overwitten later.
         options = self._load_options({})
 
         #creates a box sizer object and sets it.
         top_sizer = wx.FlexGridSizer(0, 1, 2, 0)
         self._sizer.Add(top_sizer, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 1)
+
+        #info button event brings up a panel with tabs / infomation.
+        def _on_button(evt):
+            #creates the button with the default content.
+            dialog = SimpleDialog(self, "Plugin Info")
+            
+            #creates a notebook object.
+            notebooks = wx.Notebook(dialog)
+            
+
+            # Create the tab windows.
+            tab1 = TabOne(notebooks)
+            tab2 = TabTwo(notebooks)
+            tab3 = TabThree(notebooks)
+
+            # Add the panels to the tabs to name them.
+            notebooks.AddPage(tab1, "Operation Modes")
+            notebooks.AddPage(tab2, "Basic Usage")
+            notebooks.AddPage(tab3, "Multible Usage")
+
+            #handle sizers and shows and skip calls.
+            dialog.sizer.Add(notebooks, 3, wx.ALL, 3)
+            dialog.ShowModal()
+            evt.Skip()
+
+        help_button.Bind(wx.EVT_BUTTON, _on_button)
 
         #text label for mode description
         self._label_txt1=wx.StaticText(self, 0, label=' Loot Mode (Description)')
@@ -447,6 +558,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         #custom loot tables textbox
         self._label_txt4=wx.StaticText(self, 0, label=' Write (Custom Loot Tables)')
         
+        
         #set a font.
         #self._label_txt4.SetFont(wx.Font(12, wx.ROMAN, wx.ITALIC, wx.NORMAL))
         top_sizer.Add(self._label_txt4, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
@@ -457,7 +569,12 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         # )
         #GetMultilineTextExtent()
         self.loot_textbox = wx.richtext.RichTextCtrl(self,style=wx.TE_MULTILINE, size=(280,150))
-        self.loot_textbox.SetLabel("loot_tables/folder_name/table_name.json")
+        self.loot_textbox.SetValue("loot_tables/folder_name/table_name.json")
+        self.loot_textbox.SetStyle(0, 1000, wx.TextAttr((169, 169, 169, 255), (255, 255, 255, 128)))
+        self.loot_textbox.Bind(wx.EVT_TEXT, self._changed_text, self.loot_textbox)
+        self.loot_textbox.Bind(wx.EVT_SET_FOCUS, self._changed_text_focus, self.loot_textbox)
+        self.loot_textbox.Bind(wx.EVT_KILL_FOCUS, self._changed_text_unfocus, self.loot_textbox)
+
         top_sizer.Add(self.loot_textbox, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
         
         #text label & spin ctrl for loot table seed
@@ -506,9 +623,9 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         self._radio1.Bind(wx.EVT_RADIOBOX,self._on_radio_box)
         self._sizer.Add(self._radio1, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
 
-        self._ignore_empty = wx.CheckBox(self,label="Ignore (Filled Containers)")
+        self._ignore_empty = wx.CheckBox(self,label="Ignore (Filled Containers)", style=3)
         self._ignore_empty.Bind(wx.EVT_CHECKBOX, self._check_ignore_empties)
-        self._sizer.Add(self._ignore_empty, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
+        self._sizer.Add(self._ignore_empty, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 3)
 
 
         #run button
@@ -529,6 +646,27 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
     #interesting to note that ommiting the 0 on the second index of the tuple works?
     def wx_add_options(self) -> Tuple[int, ...]:
         return (0,)
+
+    #event for when text is edited to change the textbox to blank and change text color to black,
+    #change the text back to orginal val when its blank.
+    def _changed_text(self, evt):
+        if self.loot_textbox.GetValue() == "loot_tables/folder_name/table_name.json":
+            self.loot_textbox.SetStyle(0, 1000, wx.TextAttr((169, 169, 169, 255), (255, 255, 255, 128)))
+        else:
+            self.loot_textbox.SetStyle(0, 32767, wx.TextAttr((0, 0, 0, 255), (255, 255, 255, 128)))
+
+    def _changed_text_focus(self, evt):
+        print (str("focus")+self.loot_textbox.GetValue())
+        if self.loot_textbox.GetValue() == "loot_tables/folder_name/table_name.json":
+            self.loot_textbox.SetStyle(0, 1000, wx.TextAttr((169, 169, 169, 255), (255, 255, 255, 128)))
+        else:
+            self.loot_textbox.SetStyle(0, 32767, wx.TextAttr((0, 0, 0, 255), (255, 255, 255, 128)))
+
+    def _changed_text_unfocus(self, evt):
+        print (str("unfocus")+self.loot_textbox.GetValue())
+        if len(self.loot_textbox.GetValue()) == 0:
+            self.loot_textbox.SetStyle(0, 1000, wx.TextAttr((169, 169, 169, 255), (255, 255, 255, 128)))
+            self.loot_textbox.SetValue("loot_tables/folder_name/table_name.json")
 
     #sorta clears the screen there is no clear and cut dry way of doing this sadly.
     def _cls(self):
@@ -556,7 +694,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         self.spin_ctrl.SetValue("0")
 
     def _on_text_enter(self, evt):
-        print ("text_undo!")
+        print ()
 
     def _click_skipper(self, evt):
         chk_selection = self.checklist.GetSelection()
@@ -869,15 +1007,16 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
 
     #downloads the current behavior pack zip from the stable version of MCBE if the temp folder doesn't exist.
     def _get_loot_download(self):
+        tdir = "/temp"
         if path.exists(str(os.getcwd()).replace("\\","/")+tdir):
             return self._get_vanilla_template(
                 'https://www.aka.ms/behaviorpacktemplate',
-                '/plugins/temp',
+                '/plugins'+str(tdir),
                 'temp.zip'
             )[0]
         else:
             return self._get_loots_from_zip(
-                'plugins/temp/loot_tables/chests'
+                'plugins'+str(tdir)+'/loot_tables/chests'
             )
 
     #gets the vanilla loot tables if installed on any of your drives.
@@ -1003,7 +1142,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         try:
             os.makedirs('plugins/temp')
         except:
-            pass
+            return None
 
     #gets parsed list of loot tables from a list
     def _get_loots_from_zip(self, loots_path):
@@ -1041,75 +1180,101 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
     def _bad_chunk(self, x, y, z):
         print ("Chunk does not exist or can't be read at [X, Y, Z]: "+str([x, y, z]))
 
-    #prints a no selection error to the console.
-    def _no_selected_error(self):
-        print ("(ERROR!) There were no containers selected!")
-        print ("Please try again...")
+    #removes float values
+    def trun(self, x, ds = 0):
+        mm = 10 ** ds
+        return int(x * mm) / mm
 
-    def _parse_custom_loot_tables(self, table_str):
-        if isinstance(str, table_str):
-            table_str = str(table_str)
-            if table_str.count(",") > 0:
-                if ", " in table_str:
-                    return self._parse_custom_loot_table(table_str.split(", "))
-                elif "," in table_str:
-                    return self._parse_custom_loot_table(table_str.split(" "))
-                else:
-                    print ("ERROR! Invalid input for custom loot tables (Must have valid formatting!)")
-                    return None
-            else:
-                if len(table_str) > 0:
-                    if "loot_tables/" in table_str and ".json" in table_str:
-                        return table_str
-                    else:
-                        if ".json" not in table_str:
-                            print ("(ERROR!) Missing .json at the end the loot table path.")
-                            return None
-                        elif "loot_tables/" not in table_str:
-                            print ("(ERROR!) Missing loot_tables/ at the start of loot table path.")
-                            return None
+    def _parse_custom_loot_tables(self, table_object):
+        if isinstance(table_object, str ):
+            if len(table_object) > 0:
+
+                #check if base loot_table string exist.
+                if "loot_tables/" in table_object and '.json' in table_object:
+
+                    #for comma seperated list.
+                    if table_object.count(",") > 0:
+                        if ", " in table_object:
+                            return self._parse_custom_loot_tables(table_object.split(", "))
+                        elif "," in table_object:
+                            return self._parse_custom_loot_tables(table_object.split(","))
                         else:
-                            print ("(ERROR!) Invalid formatting!")
-                else:
-                    return None
+                            wx.MessageBox("(ERROR!) Custom loot table string is invalid!/nPlease try again...")
 
-        elif isinstance(list, table_str):
-            table_list = table_str
-            weighted_tables = {}
-            for table_strs in table_list:
-                if "%" in table_strs:
-                    weighted_tables[table_strs.split("%")[1]] = table_strs.split("%")[0]
+                    return table_str
+
+        elif isinstance(table_object, list ):
+            parsed_tables = []
+
+            for loot_table in table_object:
+                if "%" in loot_table:
+                    weight = loot_table.split("%")[0]
+                    loot_table_str = loot_table.split("%")[1]
+                    parsed_tables.append([weight, loot_table_str])
+
                 else:
-                    weighted_tables[table_strs] = None
-            return weighted_tables
+                    parsed_tables.append([None, loot_table.lstrip()])
+
+            weights = []
+            good_weights = []
+            tables = []
+            for parser_table in parsed_tables:
+                weight_var, table_var = parser_table
+                weights.append(weight_var)
+
+                if table_var is not None:
+                    tables.append(table_var)
+
+                if weight_var is not None:
+                    good_weights.append(weight_var)
+
+            good_weight = len(good_weights)
+            rweights = list(map(float, good_weights))
+
+            print (rweights)
+
+            #create a formula to calculate the remaigning chance out of the missing weights 
+            calculate_missing_weights = sum(rweights) / 100.0
+
+            #gets the remaigner value from the above formula.
+            missing_weight = 1.0 - calculate_missing_weights
+            balanced_weight = round(missing_weight / weights.count(None),2)
+            combined_weight = float(f"{missing_weight:.2f}")
+            print ("missing weight: "+str(combined_weight))
+            print ("balanced_weight: "+str(balanced_weight))
+
+            if sum(rweights) > 100.0:
+                wx.MessageBox("(ERROR!) random weight is greater then allowed: "+str(int(sum(rweights)))+" > 100%")
+
+            elif balanced_weight <= 0.0 and missing_weight <= 0.0:
+                wx.MessageBox("(ERROR!) cant devide by 0, decrease a weighted value by at least 1%")
+
+            else:
+                final_loot_tables = []
+                for parsed_table in parsed_tables:
+                    if parsed_table[0] == None:
+                        final_loot_tables.append([combined_weight, parsed_table[1]])
+                    else:
+                        final_loot_tables.append([float(parsed_table[0]), parsed_table[1]])
+
+                print (*final_loot_tables, sep='\n')
+                return final_loot_tables
         else:
-            return None
-
-
+            wx.MessageBox("(ERROR!) custom loot table string is invalid!/nPlease try again...")
 
     #main preform method.
     def _set_loot_tables(self):
-        print ("Gathering loot_tables")
+        #gets the operation_mode for what operation to run.
         op_mode = self._mode.GetString(self._mode.GetSelection())
+
+        #boolean value for empty chest only selections.
         empty_mode = self._ignore_empty.GetValue()
-        selected_custom_table = self.loot_textbox.GetRange(0, 1000)
+
+        #parses custom loot_table string.
+        selected_custom_table = self._parse_custom_loot_tables(self.loot_textbox.GetRange(0, 32767))
+
+        #gets the selected loot_table string from the vanilla list.
         selected_table = "loot_tables/chests/"+str(self._sel_loot.GetString(self._sel_loot.GetSelection()))
-        table_str = " "
-        weighted_tables = False
-
-        #gets a dict, none or a string.
-        # custom_loot_tables = self._parse_custom_loot_tables(selected_table)
-
-        # if self._mode.GetString(self._mode.GetSelection()):
-            # if isinstance(str, custom_loot_tables):
-                # selected_table = custom_loot_tables
-                # weighted_tables = False
-
-            # if isinstance(dict, custom_loot_tables):
-                # weighted_tables = True
-
-            # if isinstance(None, custom_loot_tables):
-                # print ("(ERROR!) Custom loot table path is blank!")
 
         #gets the world instance and platform and version.
         world = self.world
@@ -1226,7 +1391,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                             self._bad_chunk(x, y, z)
 
             else:
-                self._no_selected_error()
+                wx.MessageBox("(ERROR!) There were no containers selected!/nPlease try again...")
 
         #the set vanilla loot table operation is handled here.
         elif op_mode == op_modes[1]:
@@ -1297,14 +1462,12 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                                 self._refresh_chunk(dim, world, x, z)
 
             else:
-                self._no_selected_error()
+                wx.MessageBox("(ERROR!) There were no containers selected!/nPlease try again...")
 
         #the set custom loot table operation is handled here.
         elif op_mode == op_modes[2]:
             #start message.
             print ("Selected mode: 'Custom'")
-            print ()
-            print ("Started editing containers...")
 
             #handles the wildcard case where a user selects "All Containers" this will find all block entities with an "Items" tag and add loot tables.
             if "*" in sel_block_entities:
@@ -1339,6 +1502,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
 
             elif len(sel_block_entities) > 0:
                 print ("Wildcard mode: False")
+
                 for box in sel.merge_boxes().selection_boxes:
                     for (x, y, z) in box:
                         #gets info about the block (the_block, nbt_data, water_logged_blocks.)
@@ -1349,17 +1513,17 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                             #modifies and creates new nbt in the block_entity.
                             block_entity_id = self._get_be_id(block_entity)
 
-                            print (empty_mode)
+                            #checks if this is one of the selected tiles.
                             if block_entity_id in sel_block_entities:
                                 if empty_mode == True:
-                                    print ("items count: "+str(len(block_entity.nbt["Items"])))
                                     if len(list(block_entity.nbt["Items"].value)) < 1:
-                                        print ("ran!: "+str([x, y, z]))
                                         block_entity.nbt["LootTable"] = TAG_String(selected_custom_table)
                                         block_entity.nbt["LootTableSeed"] = TAG_Long(loot_table_seed)
                                         block_entity.nbt["Items"] = TAG_List([])
+
                                         #sets the tile_entity block with updated NBT.
                                         world.set_version_block(x, y, z, dim, mc_version, block, block_entity)
+
                                         #counts + 1 for every block_entity it finds.
                                         containers_count+=1
 
@@ -1373,15 +1537,96 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                                     block_entity.nbt["LootTable"] = TAG_String(selected_custom_table)
                                     block_entity.nbt["LootTableSeed"] = TAG_Long(loot_table_seed)
                                     block_entity.nbt["Items"] = TAG_List([])
+
                                     #sets the tile_entity block with updated NBT.
                                     world.set_version_block(x, y, z, dim, mc_version, block, block_entity)
 
             else:
-                self._no_selected_error()
+                wx.MessageBox("(ERROR!) There were no containers selected!/nPlease try again...")
+
+        #the set custom loot table operation is handled here.
+        elif op_mode == op_modes[3]:
+            #start message.
+            print ("Selected mode: 'Remove'")
+
+            #handles the wildcard case where a user selects "All Containers" this will find all block entities with an "Items" tag and add loot tables.
+            if "*" in sel_block_entities:
+                print ("Wildcard mode: True")
+                for box in sel.merge_boxes().selection_boxes:
+                    for (x, y, z) in box:
+                        #gets info about the block (the_block, nbt_data, water_logged_blocks.)
+                        (block, block_entity, extras) = self._get_vanilla_block(dim, world, x, y, z, trans)
+                        if block_entity is not None:
+
+                            block_entity_id = self._get_be_id(block_entity)
+
+                            #checks if the "LootTable & " tag is in the block_entity,
+                            #modifies and creates new nbt in the block_entity.
+                            if "LootTable" in block_entity.nbt:
+                                del block_entity.nbt["LootTable"]
+                                del block_entity.nbt["LootTableSeed"]
+
+                                #sets the tile_entity block with updated NBT.
+                                world.set_version_block(x, y, z, dim, mc_version, block, block_entity)
+
+                                #counts + 1 for every block_entity it finds.
+                                containers_count+=1
+
+                                #adds the block_entity_id to a list.
+                                if block_entity_id not in containers_found:
+                                    containers_found.append(block_entity_id)
+
+                                #updates the chunk.
+                                self._refresh_chunk(dim, world, x, z)
+
+            elif len(sel_block_entities) > 0:
+                print ("Wildcard mode: False")
+
+                for box in sel.merge_boxes().selection_boxes:
+                    for (x, y, z) in box:
+                        #gets info about the block (the_block, nbt_data, water_logged_blocks.)
+                        (block, block_entity, extras) = self._get_vanilla_block(dim, world, x, y, z, trans)
+                        if block_entity is not None:
+
+                            #checks if the block_entity.id is in the list of selected block_entities,
+                            #modifies and creates new nbt in the block_entity.
+                            block_entity_id = self._get_be_id(block_entity)
+
+                            #checks if this is one of the selected tiles.
+                            if block_entity_id in sel_block_entities:
+                                if empty_mode == True:
+                                    if len(list(block_entity.nbt["Items"].value)) < 1:
+                                        if "LootTable" in block_entity.nbt:
+                                            del block_entity.nbt["LootTable"]
+                                            del block_entity.nbt["LootTableSeed"]
+
+                                            #sets the tile_entity block with updated NBT.
+                                            world.set_version_block(x, y, z, dim, mc_version, block, block_entity)
+
+                                            #counts + 1 for every block_entity it finds.
+                                            containers_count+=1
+
+                                            #adds the block_entity_id to a list.
+                                            if block_entity_id not in containers_found:
+                                                containers_found.append(block_entity_id)
+
+                                            #updates the chunk.
+                                            self._refresh_chunk(dim, world, x, z)
+                                else:
+                                    block_entity.nbt["LootTable"] = TAG_String(selected_custom_table)
+                                    block_entity.nbt["LootTableSeed"] = TAG_Long(loot_table_seed)
+                                    block_entity.nbt["Items"] = TAG_List([])
+
+                                    #sets the tile_entity block with updated NBT.
+                                    world.set_version_block(x, y, z, dim, mc_version, block, block_entity)
+
+            else:
+                wx.MessageBox("(ERROR!) There were no containers selected!/nPlease try again...")
+
 
         if len(sel_block_entities) > 0:
             #completion message and block_entity meta.
-            print ("Finished editing all containers!")
+            print ("Finished processing!")
             print ()
             print ("MC Platform: "+str(platform))
             print ("MC Version: "+str(world_version))
@@ -1393,20 +1638,18 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                 print ()
                 print ("Types of containers found: ")
                 print ('\n'.join(map(str, list(containers_found)))) 
-                print ()
-                print ("The loot table strings used: ")
-                print ('\n'.join(map(str, loot_table_src.keys()))) 
             else:
-                print ("(ERROR!) There are no valid containers found: ")
-                print ("Please try again...")
+                wx.MessageBox("(ERROR!) there are no valid containers found!/nPlease try again...")
 
             #remove temp folder when complete.
-            temp_path = str(os.getcwd())+'\\plugins\\temp'
+            temp_path = str(os.getcwd())+'\\plugins\\temp\\'
             try:
-                print (temp_path)
                 shutil.rmtree(temp_path)
             except:
-                print ("(ERROR!) with removing: "+str(temp_path))
+                try:
+                    os.rmdir(temp_path)
+                except:
+                    wx.MessageBox("(ERROR!) with removing: "+str(temp_path))
                 pass
 
 #simple export options.
