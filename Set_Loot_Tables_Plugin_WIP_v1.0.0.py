@@ -1201,7 +1201,7 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                         else:
                             wx.MessageBox("(ERROR!) Custom loot table string is invalid!/nPlease try again...")
 
-                    return table_str
+                    return table_object
 
         elif isinstance(table_object, list ):
             parsed_tables = []
