@@ -1,4 +1,4 @@
-#You may use this plugin for only non commercial purposes aka non Minecraft Marketplace content.
+#You may use this plugin for only non commercial purposes aka non Minecraft Marketplace content, unless directly asking me on discord or twitter for permission.
 
 #This loot table plugin supports java, bedrock and possibly other platforms!
 #I gave it my best shot so let me know if it works on mac-os or linux?
