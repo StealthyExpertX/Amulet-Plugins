@@ -98,10 +98,10 @@ test_url = 'http://google.com'
 
 #operation mode types.
 operation_modes = {
-    "Randomize": "Randomize: set containers with randomized vanilla loot tables.",
-    "Vanilla": "Vanilla: set containers with a selected vanilla loot table name.",
-    "Custom": "Custom: set containers with a custom inputed loot table path.",
-    "Remove": "Remove: remove loot table nbt data from containers.",
+    "Randomize": "Set containers with randomized vanilla loot tables.",
+    "Vanilla": "Set containers with a selected vanilla loot table name.",
+    "Custom": "Set containers with a custom inputed loot table path.",
+    "Remove LootTables": "Remove loot table nbt in containers.",
 }
 
 loot_table_seed = 0
@@ -385,14 +385,14 @@ class TabOne(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         
-        tab1text = "This plugin allows you to do loot table based operations:\n"\
-        "- 'Randomize' which allows you to set fully random loot tables.\n"\
-        "- 'Vanilla' which allows you to set vanilla loot tables using the path list supplied in this plugin.\n"\
-        "- 'Custom' which allows you to set custom loot table paths supplied by the user.\n"\
-        "- 'Remove' which allows you to remove custom loot tables from containers in the selection."
-        # "- 'Clear' which allows you to remove items from containers in the selection.\n"\
-        # "- 'Replace' which allows you to replace loot tables in containers in the selection.\n"
-        t = wx.StaticText(self, 0, tab1text, style=wx.ST_ELLIPSIZE_END)
+        tab1text = "This plugin allows you to do loot table based operations,\n"\
+        "- 'Vanilla' which allows you to set vanilla loot tables using the path list supplied in this plugin."\
+        "- 'Random' which allows you to set fully random loot tables."\
+        "- 'Custom' which allows you to set custom loot table paths supplied by the user."\
+        "- 'Remove' which allows you to remove custom loot tables from containers in the selection."\
+        "- 'Clear' which allows you to remove items from containers in the selection.\n"
+        "- 'Replace' which allows you to replace loot tables in containers in the selection.\n"
+        t = wx.StaticText(self, 0, tab1text)
         self._sizer2 = wx.FlexGridSizer(0, 4, 0, 4) #verticle shape top to bottom for main dialog.
         self._sizer2.Add(t, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 2)
         self.SetSizer(self._sizer2)
@@ -428,7 +428,7 @@ class TabTwo(wx.Panel):
 
         tab1text ="\nyou can use a single loot table as well like this. \nexample: loot_tables/custom/loot_table_1.json"\
 
-        t = wx.StaticText(self, 0, tab1text, style=wx.ST_ELLIPSIZE_END)
+        t = wx.StaticText(self, 0, tab1text)
         self._sizer2 = wx.FlexGridSizer(0, 4, 0, 4) #verticle shape top to bottom for main dialog.
         self._sizer2.Add(t, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 2)
         self.SetSizer(self._sizer2)
@@ -436,19 +436,13 @@ class TabTwo(wx.Panel):
 class TabThree(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
-        tab1text ="In \"Custom\" mode the plugin simply takes the address string you provide and sets it as NBT data for the container.\n"\
-        "So make sure the address you provide points to a valid loot table json in your behavior folder!\n"\
-        "\n"\
-        "You can use a single loot table.\n"\
-        "Example: loot_tables/custom/loot_table_1.json\n"\
-        "\n"\
-        "You can also use multiple loot tables. The plugin will choose one at random from the list you provide.\n"\
-        "Put all the address strings in a single line separated by commas(,) colons(:) or semicolons(;).\n"\
-        "Example 1: loot_tables/custom/loot_table_1.json, loot_tables/custom/loot_table_2.json\n"\
-        "Example 2: loot_tables/custom/loot_table_1.json: loot_tables/custom/loot_table_2.json\n"\
-        "Example 3: loot_tables/custom/loot_table_1.json; loot_tables/custom/loot_table_2.json\n"\
+        tab1text ="you can use commas or colons or semi colons to seperate more then one loot table.\n"\
+        "usage examples:\n"\
+        "loot_tables/custom/loot_table_1.json, loot_tables/custom/loot_table_2.json\n"\
+        "loot_tables/custom/loot_table_1.json: loot_tables/custom/loot_table_2.json\n"\
+        "loot_tables/custom/loot_table_1.json; loot_tables/custom/loot_table_2.json"
 
-        t = wx.StaticText(self, 0, tab1text, style=wx.ST_ELLIPSIZE_END)
+        t = wx.StaticText(self, 0, tab1text)
         self._sizer2 = wx.FlexGridSizer(0, 4, 0, 4) #verticle shape top to bottom for main dialog.
         self._sizer2.Add(t, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 2)
         self.SetSizer(self._sizer2)
@@ -526,15 +520,19 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
 
             # Add the panels to the tabs to name them.
             notebooks.AddPage(tab1, "Operation Modes")
-            # notebooks.AddPage(tab2, "Basic Usage")
-            notebooks.AddPage(tab3, "Custom Mode")
+            notebooks.AddPage(tab2, "Basic Usage")
+            notebooks.AddPage(tab3, "Multible Usage")
 
             #handle sizers and shows and skip calls.
-            dialog.sizer.Add(window=notebooks, proportion=2, flag=wx.ALL, border=4)
+            dialog.sizer.Add(notebooks, 3, wx.ALL, 3)
             dialog.ShowModal()
             evt.Skip()
 
         help_button.Bind(wx.EVT_BUTTON, _on_button)
+
+        #text label for mode description
+        self._label_txt1=wx.StaticText(self, 0, label=' Loot Mode (Description)')
+        self._sizer.Add(self._label_txt1, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
 
         #text label for mode selection
         self._label_txt2=wx.StaticText(self, 0, label=' Choose (Loot Mode)')
@@ -544,21 +542,6 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         self._mode = wx.Choice(self, choices=list(operation_modes.keys()))
         self._mode.SetSelection(1)
         top_sizer.Add(self._mode, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 1)
-
-        #text label for mode description
-        # self._label_txt1=wx.StaticText(self, 0, label=' Loot Mode (Description)')
-        # top_sizer.Add(self._label_txt1, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
-
-        #description text box.
-        self._mode_description = wx.TextCtrl(
-            self, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_BESTWRAP
-        )
-        top_sizer.Add(self._mode_description, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
-
-        #sets the description label.
-        self._mode_description.SetLabel(
-            operation_modes[self._mode.GetString(self._mode.GetSelection())]
-        )
 
         #text label for loot table selection
         self._label_txt3=wx.StaticText(self, 0, label=' Choose (Loot Table)')
@@ -609,6 +592,17 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         self.spin_ctrl.Bind(wx.EVT_ENTER_WINDOW, self._on_seed_join)
         top_sizer.Add(self.spin_ctrl, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
         loot_table_seed = 0
+
+        #description text box.
+        self._mode_description = wx.TextCtrl(
+            self, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_BESTWRAP
+        )
+        self._sizer.Add(self._mode_description, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
+
+        #sets the description label.
+        self._mode_description.SetLabel(
+            operation_modes[self._mode.GetString(self._mode.GetSelection())]
+        )
 
         self.checklist = wx.CheckListBox(self, 2, pos = (80,10),choices=list(chkdict.keys()) , style=0)
         self.Bind(wx.EVT_LISTBOX, self._click_skipper, self.checklist)
