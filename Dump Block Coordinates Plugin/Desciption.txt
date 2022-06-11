@@ -1,0 +1,8 @@
+Set Dump Block Coordinates Plugin:
+
+- This plugin searches for all blocks in the selection and dump their locations to a machine readable file type of your choosing including json & txt.
+- I plan on adding support to somehow dump NBT data to files as well eventually, but may not do it anytime soon.
+- Added support for ignoring air blocks and added some other new format types.
+- If you have any issues with the plugin please reach out me for support.
+- Discord: StealthyX#8940
+- Twitter: @RedstonerLabs

@@ -1,0 +1,8 @@
+Set Find Opened Barrels & Containers Plugin:
+
+- This plugin searches for chest and barrels that have loot tables if they have been opened by a player it will give the coordinates in the Amulet console.
+- No plans for any future updates at this time, was a super niche use case.
+- N/A
+- if you have any issues with the plugin please reach out me for support.
+- Discord: StealthyX#8940
+- Twitter: @RedstonerLabs

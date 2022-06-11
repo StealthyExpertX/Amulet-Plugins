@@ -1,0 +1,7 @@
+Clean Everything Plugin:
+
+- This plugin removes all blocks except ores.
+- Planning on updating block supports.
+- If you have any issues with the plugin please reach out me for support.
+- Discord: StealthyX#8940
+- Twitter: @RedstonerLabs

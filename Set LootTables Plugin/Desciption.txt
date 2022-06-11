@@ -1,0 +1,8 @@
+Set LootTables Plugin:
+
+- This plugin allows you to edit, set, remove, randomize loot tables on containers such as Chest, Barrels, ShulkerBoxes, etc.
+- Entity support is not added yet but will be eventually with no time table.
+- Plugin was updated to 1.19 bedrock and java recently though is untested and 
+- if you have any issues with the plugin please reach out me for support.
+- Discord: StealthyX#8940
+- Twitter: @RedstonerLabs
