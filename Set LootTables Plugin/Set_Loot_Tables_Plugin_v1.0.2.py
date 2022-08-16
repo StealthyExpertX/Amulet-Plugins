@@ -578,7 +578,8 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         top_sizer.Add(self._label_txt3, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
 
         #choicebox for loot table selection.
-        self._sel_loot = wx.Choice(self, choices=list(loot_table_src.keys()))
+        # sorted the list for readability
+        self._sel_loot = wx.Choice(self, choices=sorted(list(loot_table_src.keys())))
         self._sel_loot.SetSelection(0)
         top_sizer.Add(self._sel_loot, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
 
@@ -1020,7 +1021,8 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         except:
             fixed_str = None
         try:
-            loot_table = "loot_tables/"+str(str(fixed_str.split("/loot_tables/")[1].split(".json/")[0])+".json")
+            # by fixing the get_all_loot_paths method, I can fix this code
+            loot_table = "loot_tables/"+str(fixed_str.split("/loot_tables/")[1])
             return loot_table
         except:
             if txtstr is None:
@@ -1057,24 +1059,26 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
             try:
                 vanilla_loot_path = str(drive_type)+":/Program Files/WindowsApps/Microsoft.Minecraft*/data/behavior_packs/**/loot_tables/chests/*.*"
                 vanilla_loot_path_village = str(drive_type)+":/Program Files/WindowsApps/Microsoft.Minecraft*/data/behavior_packs/**/loot_tables/chests/village/*.*"
-                loot_paths = glob.glob(vanilla_loot_path)+glob.glob(vanilla_loot_path_village)
 
+                # list with all the loot table file paths from all versions of minecraft
+                loot_paths = glob.glob(vanilla_loot_path)+glob.glob(vanilla_loot_path_village)
+                # print(*loot_paths,sep = "\n") # DEBUGGING PRINT
+                # remove all duplicates from the loot table list
                 for lootp in loot_paths:
+                    # unique identifier for this loot table
                     lootpath = os.path.basename(lootp)
 
                     if lootpath not in loot_names:
+                        # add the file name of the loot table to a temporary list with unique entries
                         loot_names.append(lootpath)
-
-                for crd, curloot in enumerate(loot_names):
-                    if curloot not in loot_drives:
-                        loot_table = str(loot_paths[crd].split("/loot_")[0]+"/loot_"+curloot)
-                        loot_drives.append(loot_table)
+                        # add the newly discovered unique loot table to the list with long paths
+                        loot_drives.append(lootp)
 
                 found_drives.append(drive_type)
 
             except:
                 not_found_drives.append(drive_type)
-
+        # print(*loot_drives,sep = "\n")  # DEBUGGING PRINT
         return loot_drives
 
     #extract a loot table list using current version and platform of minecraft 'bedrock' or 'java' or other misc platforms.
@@ -1297,7 +1301,9 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         selected_custom_table = self._parse_custom_loot_tables(self.loot_textbox.GetRange(0, 32767))
 
         #gets the selected loot_table string from the vanilla list.
-        selected_table = "loot_tables/chests/"+str(self._sel_loot.GetString(self._sel_loot.GetSelection()))
+        # we already have the path of the loot table in loot_table_src. We don't need to construct it.
+        selected_table = loot_table_src[str(self._sel_loot.GetString(self._sel_loot.GetSelection()))]
+        # print("selected_table: "+selected_table) # DEBUGGING PRINT
 
         #gets the world instance and platform and version.
         world = self.world
@@ -1672,7 +1678,9 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
             #remove temp folder when complete.
             temp_path = str(os.getcwd())+'\\plugins\\temp\\'
             try:
-                shutil.rmtree(temp_path)
+                # code gives an error if the temp folder was already deleted and is no longer there
+                if os.path.exists(temp_path):
+                    shutil.rmtree(temp_path)
             except:
                 try:
                     os.rmdir(temp_path)
