@@ -796,7 +796,8 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
             #loops over the loot tables and regenerates the platform and version.
             loot_table_src = {}
             self._sel_loot.Clear()
-            for tbls in self._loot_table_strs((platform, world_version)):
+            cur_table = self._loot_table_strs((platform, world_version))
+            for tbls in cur_table:
                 loot_table_src[os.path.basename(tbls)] = tbls
                 self._sel_loot.Append(os.path.basename(tbls))
 
@@ -837,7 +838,8 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
 
             #loops over the loot tables and regenerates the list with the OP tables.
             loot_table_src = {}
-            for tbls in self._loot_table_strs((platform, world_version)):
+            cur_table = self._loot_table_strs((platform, world_version))
+            for tbls in cur_table:
                 loot_table_src[os.path.basename(tbls)] = tbls
                 self._sel_loot.Append(os.path.basename(tbls))
 
@@ -846,7 +848,8 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
 
             #loops over the loot tables and regenerates the list without the OP tables.
             loot_table_src = {}
-            for tbls in self._loot_table_strs((platform, world_version)):
+            cur_table = self._loot_table_strs((platform, world_version))
+            for tbls in cur_table:
                 if tbls not in hardcoded_ops:
                     loot_table_src[os.path.basename(tbls)] = tbls
                     self._sel_loot.Append(os.path.basename(tbls))
@@ -1090,45 +1093,83 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
         loots_local = self.get_all_loot_paths()
         loot_paths = None
 
-        #get the loot table for the correct platform, java, bedrock, or unknown.
-        if mc_platform == platform_names[0]:
-            if bool(loots_local):
-                print ("Defaulting to local tables...")
-                #takes bedrock tables converts them to java tables.
-                loot_paths = self._get_java_tables(loots_local, (mc_platform, mc_version))
+        #if anything fails it defaults to universal for safety!
+        try:
+            #get the loot table for the correct platform, java, bedrock, or unknown.
+            if mc_platform == platform_names[0]:
+                if bool(loots_local):
+                    #takes bedrock tables converts them to java tables.
+                    loot_paths = self._get_java_tables(loots_local, (mc_platform, mc_version))
 
-            #checks internet if local loot_tables can't be found to see if it can download the latest from the internet.
-            elif self._connect(test_url) == True:
-                print ("Defaulting to online tables...")
-                link_tables = self._get_loot_download()
-                loot_paths = self._get_java_tables(link_tables, (mc_platform, mc_version))
+                    if len(loot_paths) < 1:
+                        loot_paths = loots_universal_table
+                        print ("Defaulting to universal tables...")
+                    else:
+                        print ("Defaulting to local tables...")
+
+                #checks internet if local loot_tables can't be found to see if it can download the latest from the internet.
+                elif self._connect(test_url) == True:
+                    link_tables = self._get_loot_download()
+                    loot_paths = self._get_java_tables(link_tables, (mc_platform, mc_version))
+
+                    if len(loot_paths) < 1:
+                        loot_paths = loots_universal_table
+                        print ("Defaulting to universal tables...")
+                    else:
+                        print ("Defaulting to online tables...")
+
+                else:
+                    #takes hardcoded bedrock tables converts them to java tables because all other methods failed.
+                    loot_paths = self._get_java_tables(loots_hardcoded, (mc_platform, mc_version))
+
+                    if len(loot_paths) < 1:
+                        loot_paths = loots_universal_table
+                        print ("Defaulting to universal tables...")
+                    else:
+                        print ("Defaulting to hardcoded tables for java.")
+
+            elif mc_platform == platform_names[1]:
+                if bool(loots_local):
+                    loot_paths = self._get_bedrock_tables(loots_local, (mc_platform, mc_version))
+
+                    if len(loot_paths) < 1:
+                        loot_paths = loots_universal_table
+                        print ("Defaulting to universal tables...")
+                    else:
+                        print ("Defaulting to local tables...")
+
+                #checks internet if local loot_tables can't be found to see if it can download the latest from the internet.
+                elif self._connect(test_url) == True:
+                    link_tables = self._get_loot_download()
+                    loot_paths = self._get_bedrock_tables(link_tables, (mc_platform, mc_version))
+
+                    if len(loot_paths) < 1:
+                        loot_paths = loots_universal_table
+                        print ("Defaulting to universal tables...")
+                    else:
+                        print ("Defaulting to online tables...")
+
+                else:
+                    #uses hardcoded bedrock tables because all other methods failed.
+                    loot_paths = self._get_bedrock_tables(loots_hardcoded, (mc_platform, mc_version))
+
+                    if len(loot_paths) < 1:
+                        loot_paths = loots_universal_table
+                        print ("Defaulting to universal tables...")
+                    else:
+                        print ("Defaulting to hardcoded tables for bedrock.")
 
             else:
-                print ("Defaulting to hardcoded tables for java.")
-                #takes hardcoded bedrock tables converts them to java tables because all other methods failed.
-                loot_paths = self._get_java_tables(loots_hardcoded, (mc_platform, mc_version))
+                print ("Defaulting to universal tables...")
+                #sets the loot_paths to use a hardcoded universal list - this is if the platform isn't 'java' or 'bedrock', 
+                #it will only use loot tables that exist on both platforms to be safe.
+                #this also parses them to make sure they work in all versions and platforms 
+                #though this does limit options and remove many loot tables :(
+                loot_paths = loots_universal_table
 
-        elif mc_platform == platform_names[1]:
-            if bool(loots_local):
-                print ("Defaulting to local tables...")
-                loot_paths = self._get_bedrock_tables(loots_local, (mc_platform, mc_version))
-
-            #checks internet if local loot_tables can't be found to see if it can download the latest from the internet.
-            elif self._connect(test_url) == True:
-                print ("Defaulting to online tables...")
-                link_tables = self._get_loot_download()
-                loot_paths = self._get_bedrock_tables(link_tables, (mc_platform, mc_version))
-
-            else:
-                #uses hardcoded bedrock tables because all other methods failed.
-                print ("Defaulting to hardcoded tables for bedrock.")
-                loot_paths = self._get_bedrock_tables(loots_hardcoded, (mc_platform, mc_version))
-
-        else:
-            #sets the loot_paths to use a hardcoded universal list - this is if the platform isn't 'java' or 'bedrock', 
-            #it will only use loot tables that exist on both platforms to be safe.
-            #this also parses them to make sure they work in all versions and platforms 
-            #though this does limit options and remove many loot tables :(
+        except:
+            print ("[Warning!] Could not find the platform and version.")
+            print ("Defaulting to universal tables...")
             loot_paths = loots_universal_table
 
         #empty list for cleaned tables.
@@ -1213,18 +1254,22 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
             if len(table_object) > 0:
 
                 #check if base loot_table string exist.
-                if "loot_tables/" in table_object and '.json' in table_object:
+                if "loot_tables/" in table_object:
+                    if '.json' in table_object
+                        #for comma seperated list.
+                        if table_object.count(",") > 0:
+                            if ", " in table_object:
+                                return self._parse_custom_loot_tables(table_object.split(", "))
+                            elif "," in table_object:
+                                return self._parse_custom_loot_tables(table_object.split(","))
+                            else:
+                                wx.MessageBox("(ERROR!) Custom loot table string is invalid!/nPlease try again...")
 
-                    #for comma seperated list.
-                    if table_object.count(",") > 0:
-                        if ", " in table_object:
-                            return self._parse_custom_loot_tables(table_object.split(", "))
-                        elif "," in table_object:
-                            return self._parse_custom_loot_tables(table_object.split(","))
-                        else:
-                            wx.MessageBox("(ERROR!) Custom loot table string is invalid!/nPlease try again...")
-
-                    return table_object
+                        return table_object
+                    else:
+                        wx.MessageBox("(ERROR!) Custom loot table string needs the '.json' extension!/nPlease try again...")
+                else:
+                    wx.MessageBox("(ERROR!) Custom loot table string needs to start with 'loot_tables/'/nPlease try again...")
 
         elif isinstance(table_object, list ):
             parsed_tables = []
@@ -1498,7 +1543,11 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                 for box in sel.merge_boxes().selection_boxes:
                     for (x, y, z) in box:
                         #gets info about the block (the_block, nbt_data, water_logged_blocks.)
-                        (block, block_entity, extras) = self._get_vanilla_block(dim, world, x, y, z, trans)
+                        try:
+                            (block, block_entity, extras) = self._get_vanilla_block(dim, world, x, y, z, trans)
+                        except:
+                            block_entity = None
+
                         if block_entity is not None:
 
                             block_entity_id = self._get_be_id(block_entity)
@@ -1583,11 +1632,15 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                 for box in sel.merge_boxes().selection_boxes:
                     for (x, y, z) in box:
                         #gets info about the block (the_block, nbt_data, water_logged_blocks.)
-                        (block, block_entity, extras) = self._get_vanilla_block(dim, world, x, y, z, trans)
+                        try:
+                            (block, block_entity, extras) = self._get_vanilla_block(dim, world, x, y, z, trans)
+                        except:
+                            block_entity = None
+
                         if block_entity is not None:
 
                             block_entity_id = self._get_be_id(block_entity)
-
+    
                             #checks if the "LootTable & " tag is in the block_entity,
                             #modifies and creates new nbt in the block_entity.
                             if "LootTable" in block_entity.nbt:
@@ -1613,7 +1666,10 @@ class SetLootTables(wx.Panel, DefaultOperationUI):
                 for box in sel.merge_boxes().selection_boxes:
                     for (x, y, z) in box:
                         #gets info about the block (the_block, nbt_data, water_logged_blocks.)
-                        (block, block_entity, extras) = self._get_vanilla_block(dim, world, x, y, z, trans)
+                        try:
+                            (block, block_entity, extras) = self._get_vanilla_block(dim, world, x, y, z, trans)
+                        except:
+                            block_entity = None
                         if block_entity is not None:
 
                             #checks if the block_entity.id is in the list of selected block_entities,
