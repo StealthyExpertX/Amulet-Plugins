@@ -1,0 +1,10 @@
+Set CanPlaceOn CanDestroy Plugin:
+
+- This plugin searches for any containers with items and sets the NBT data on the items so they can be either placed or destroyed in adventure mode.
+- Note: This plugin will only work for adventure mode, this is a hardcoded mechanic and can't be changed.
+- Note: The game has no limit to how many blocks you can have at one time, I bealive you can even use custom blocks.
+- Note: I'll update the plugin if enough people request for me to do so or if it breaks.
+- N/A
+- If you have any issues with the plugin please reach out me for support.
+- Discord: StealthyX#8940
+- Twitter: @RedstonerLabs
