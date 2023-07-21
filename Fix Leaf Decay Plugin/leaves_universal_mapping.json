@@ -1,0 +1,86 @@
+{
+	"java": {
+		"1.20.0": {
+			"Oak": ["minecraft:oak_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Spruce": ["minecraft:spruce_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Birch": ["minecraft:birch_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Jungle": ["minecraft:jungle_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Acacia": ["minecraft:acacia_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Dark Oak": ["minecraft:dark_oak_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Azalea": ["minecraft:azalea_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Azalea Flowered": ["minecraft:flowering_azalea_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Mangrove": ["minecraft:mangrove_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Cherry": ["minecraft:cherry_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}]
+		},
+		"1.19.0": {
+			"Oak": ["minecraft:oak_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Spruce": ["minecraft:spruce_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Birch": ["minecraft:birch_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Jungle": ["minecraft:jungle_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Acacia": ["minecraft:acacia_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Dark Oak": ["minecraft:dark_oak_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Azalea": ["minecraft:azalea_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Azalea Flowered": ["minecraft:flowering_azalea_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Mangrove": ["minecraft:mangrove_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}]
+		},
+		"1.18.0": {
+			"Oak": ["minecraft:oak_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Spruce": ["minecraft:spruce_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Birch": ["minecraft:birch_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Jungle": ["minecraft:jungle_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Acacia": ["minecraft:acacia_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Dark Oak": ["minecraft:dark_oak_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+		},
+		"1.17.0": {
+			"Oak": ["minecraft:oak_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Spruce": ["minecraft:spruce_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Birch": ["minecraft:birch_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Jungle": ["minecraft:jungle_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Acacia": ["minecraft:acacia_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+			"Dark Oak": ["minecraft:dark_oak_leaves", {"distance": "7", "persistent": "false", "waterlogged": "false", "old_leaf_type": None, "new_leaf_type": None, "persistent_bit": None, "update_bit": None}],
+		}
+	},
+	"bedrock": {
+		"1.20.0": {
+			"Oak": ["minecraft:leaves", {"old_leaf_type": "oak", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "new_leaf_type": None}],
+			"Spruce": ["minecraft:leaves", {"old_leaf_type": "spruce", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "new_leaf_type": None}],
+			"Birch": ["minecraft:leaves", {"old_leaf_type": "birch", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "new_leaf_type": None}],
+			"Jungle": ["minecraft:leaves", {"old_leaf_type": "jungle", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "new_leaf_type": None}],
+			"Acacia": ["minecraft:leaves2", {"new_leaf_type": "acacia", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None}],
+			"Dark Oak": ["minecraft:leaves2", {"new_leaf_type": "dark_oak", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None}],
+			"Azalea": ["minecraft:azalea_leaves", {"persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None, "new_leaf_type": None}],
+			"Azalea Flowered": ["minecraft:azalea_leaves_flowered", {"persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None, "new_leaf_type": None}],
+			"Mangrove": ["minecraft:mangrove_leaves", {"persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None, "new_leaf_type": None}],
+			"Cherry": ["minecraft:cherry_leaves", {"persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None, "new_leaf_type": None}]
+		},
+		"1.19.0": {
+			"Oak": ["minecraft:leaves", {"old_leaf_type": "oak", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "new_leaf_type": None}],
+			"Spruce": ["minecraft:leaves", {"old_leaf_type": "spruce", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "new_leaf_type": None}],
+			"Birch": ["minecraft:leaves", {"old_leaf_type": "birch", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "new_leaf_type": None}],
+			"Jungle": ["minecraft:leaves", {"old_leaf_type": "jungle", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "new_leaf_type": None}],
+			"Acacia": ["minecraft:leaves2", {"new_leaf_type": "acacia", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None}],
+			"Dark Oak": ["minecraft:leaves2", {"new_leaf_type": "dark_oak", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None}],
+			"Azalea": ["minecraft:azalea_leaves", {"persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None, "new_leaf_type": None}],
+			"Azalea Flowered": ["minecraft:azalea_leaves_flowered", {"persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None, "new_leaf_type": None}],
+			"Mangrove": ["minecraft:mangrove_leaves", {"persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None, "new_leaf_type": None}]
+		},
+		"1.18.0": {
+			"Oak": ["minecraft:leaves", {"old_leaf_type": "oak", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "new_leaf_type": None}],
+			"Spruce": ["minecraft:leaves", {"old_leaf_type": "spruce", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "new_leaf_type": None}],
+			"Birch": ["minecraft:leaves", {"old_leaf_type": "birch", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "new_leaf_type": None}],
+			"Jungle": ["minecraft:leaves", {"old_leaf_type": "jungle", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "new_leaf_type": None}],
+			"Acacia": ["minecraft:leaves2", {"new_leaf_type": "acacia", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None}],
+			"Dark Oak": ["minecraft:leaves2", {"new_leaf_type": "dark_oak", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None}],
+			"Azalea": ["minecraft:azalea_leaves", {"persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None, "new_leaf_type": None}],
+			"Azalea Flowered": ["minecraft:azalea_leaves_flowered", {"persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None, "new_leaf_type": None}],
+		},
+		"1.17.0": {
+			"Oak": ["minecraft:leaves", {"old_leaf_type": "oak", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "new_leaf_type": None}],
+			"Spruce": ["minecraft:leaves", {"old_leaf_type": "spruce", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "new_leaf_type": None}],
+			"Birch": ["minecraft:leaves", {"old_leaf_type": "birch", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "new_leaf_type": None}],
+			"Jungle": ["minecraft:leaves", {"old_leaf_type": "jungle", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "new_leaf_type": None}],
+			"Acacia": ["minecraft:leaves2", {"new_leaf_type": "acacia", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None}],
+			"Dark Oak": ["minecraft:leaves2", {"new_leaf_type": "dark_oak", "persistent_bit": "false", "update_bit": "false", "distance": None, "persistent": None, "waterlogged": None, "old_leaf_type": None}],
+		}
+	}
+}
