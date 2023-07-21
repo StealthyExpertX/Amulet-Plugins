@@ -228,7 +228,6 @@ def get_trees_in_version(world,leaves_universal_mapping, world_platform, world_v
 	return tree_keys
 
 def fix_leaf_decay(world: BaseLevel, dimension: Dimension, selection: SelectionGroup, options: dict):
-	has_error = False
 	try:
 		start_time = time.perf_counter_ns()
 		print("\n" * 2 + "Starting the operation...")
@@ -257,7 +256,6 @@ def fix_leaf_decay(world: BaseLevel, dimension: Dimension, selection: SelectionG
 					found_version = True
 
 		if len(trees) < 1:
-			has_error = True
 			raise ValueError("You need to select atleast one checkbox!")
 
 		for box in selection.merge_boxes().selection_boxes:
@@ -309,10 +307,9 @@ def fix_leaf_decay(world: BaseLevel, dimension: Dimension, selection: SelectionG
 		print()
 		print(f"ERROR MESSAGE: {str(e)}")
 
-	finally:
-		if has_error == False:
-			elapsed_time = time.perf_counter_ns() - start_time
-			print(f"Operation time: {pretty_time_delta_ns(elapsed_time)}")
+	else:
+		elapsed_time = time.perf_counter_ns() - start_time
+		print(f"Operation completion time: {pretty_time_delta_ns(elapsed_time)}")
 
 export = {
 	"name": "Fix Leaf Decay",
