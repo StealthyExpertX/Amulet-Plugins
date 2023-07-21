@@ -27,6 +27,7 @@ Your feedback is invaluable! I'm open to updating this plugin based on popular d
 
 #standard library imports
 import time
+from typing import Tuple, Any 
 
 #third-party imports
 import numpy as np
