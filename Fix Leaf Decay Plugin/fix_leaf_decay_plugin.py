@@ -228,6 +228,15 @@ def get_trees_in_version(world,leaves_universal_mapping, world_platform, world_v
 	tree_keys = platform_dict.get(closest_version, {}).keys()
 	return tree_keys
 
+def set_state_of_block(world, x, y, z, dimension, world_versions, block_namespace, block_name, block_prop, block_extras):
+	leaves_block = Block(
+		block_namespace,
+		block_name,
+		block_prop,
+		extra_blocks=block_extras
+	)
+	world.set_version_block(x, y, z, dimension, world_versions, leaves_block)
+
 def fix_leaf_decay(world: BaseLevel, dimension: Dimension, selection: SelectionGroup, options: dict):
 	try:
 		start_time = time.perf_counter_ns()
@@ -288,21 +297,16 @@ def fix_leaf_decay(world: BaseLevel, dimension: Dimension, selection: SelectionG
 								if leaf_block == leaf_type_key:
 									block_prop[persistent_key] = byte_tag_true
 									block_prop[bedrock_update_bit_key] = byte_tag_false
+									set_state_of_block(world, x, y, z, dimension, world_versions, block_namespace, block_name, block_prop, block_extras)
+
 							else:
 								block_prop[persistent_key] = byte_tag_true
 								block_prop[bedrock_update_bit_key] = byte_tag_false
+								set_state_of_block(world, x, y, z, dimension, world_versions, block_namespace, block_name, block_prop, block_extras)
+
 						elif world_platform == "java":
 							block_prop[persistent_key] = string_tag_true
-
-						leaves_block = Block(
-							block_namespace,
-							block_name,
-							block_prop,
-							extra_blocks=block_extras
-						)
-
-						world.set_version_block(x, y, z, dimension, world_versions, leaves_block, block_entity)
-						break
+							set_state_of_block(world, x, y, z, dimension, world_versions, block_namespace, block_name, block_prop, block_extras)
 
 	except Exception as e:
 		print()
