@@ -14,6 +14,8 @@
 #VERSION DOCS this is for tracking loot tables between versions.
 
 
+# Currently Missing 1.20.0 and 1.21.0 loot tables.
+
 # The Wild Update #ADDED THE "ancient_city" loot tables.
 # JAVA: 3105
 # BEDROCK: (1,19,0)
@@ -387,6 +389,10 @@ chkdict = {
     "ShulkerBoxes": [
         "minecraft:shulker_box",
         "ShulkerBox"
+    ],
+    "Crafter": [
+        "minecraft:crafter",
+        "Crafter"
     ]
 }
 
