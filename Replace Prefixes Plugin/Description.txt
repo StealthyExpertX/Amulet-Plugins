@@ -1,0 +1,10 @@
+Prefix Replacement Plugin:
+
+- This plugin searches for all chunk's block palettes in your Minecraft world and replaces the prefixes in their block IDs and properties with a new prefix.
+- Note: This plugin only alters block IDs and properties with a specified prefix; it’s designed to work extremely fast with large selections and complex worlds.
+- Note: The plugin does not impose any limit on the number of blocks you can modify at once. It also supports custom blocks.
+- Note: I will update this plugin based on user feedback or if any issues arise.
+- N/A
+- If you encounter any issues with the plugin, feel free to reach out to me for support.
+- Discord: StealthyX#8940
+- Twitter: @RedstonerLabs
