@@ -9,10 +9,10 @@ Aliases: StealthyExpertX, stealthyx, StealthyExpert
 Contact:
 New Discord: stealthyx
 Old Discord: StealthyX#8940
-Twitter: @RedstonerLabs
+Twitter/X: @RedstonerLabs
 ------------------------------------------
 Usage:
-Commercial use of this plugin is permitted free of charge. All I ask is a heads-up, helping me track how it's enjoyed in the Minecraft community.
+Commercial use of this plugin is permitted free of charge. All I ask is you asking for permission first.
 ------------------------------------------
 Licensing:
 As the author, I reserve the right to change the licensing terms as required.

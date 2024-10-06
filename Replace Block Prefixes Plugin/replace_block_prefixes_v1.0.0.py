@@ -1,3 +1,30 @@
+"""
+------------------------------------------
+Plugin License: 
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)
+------------------------------------------
+Author: Karl D. | StealthyX
+Aliases: StealthyExpertX, stealthyx, StealthyExpert
+------------------------------------------
+Contact:
+New Discord: stealthyx
+Old Discord: StealthyX#8940
+Twitter/X: @RedstonerLabs
+------------------------------------------
+Usage:
+Commercial use of this plugin is permitted free of charge. All I ask is you asking me for permission first.
+------------------------------------------
+Licensing:
+As the author, I reserve the right to change the licensing terms as required.
+------------------------------------------
+Liability:
+By using this plugin, you're assuming all responsibility for any potential issues. Please note, I won't be liable for any problems or damages that may occur. Use it wisely!
+------------------------------------------
+Feedback & Updates:
+Your feedback is invaluable! I'm open to updating this plugin based on popular demand. Don't hesitate to reach out!
+------------------------------------------
+"""
+
 #misc imports.
 from typing import TYPE_CHECKING
 
@@ -22,8 +49,8 @@ new_prefix_key = "New Prefix: "
 #plugin options.
 operation_options = {
     "Plugin replaces old prefix in blocks with a new prefix.": ["label"],
-    old_prefix_key: ["str", "prefix1"],
-    new_prefix_key: ["str", "prefix12"],
+    old_prefix_key: ["str", "minecraft"],
+    new_prefix_key: ["str", "custom"],
 }
 
 #the main function.
@@ -115,7 +142,7 @@ def replace_prefixes(world: BaseLevel, dimension: Dimension, selection: Selectio
 
 #register the plugin.
 export = {
-    "name": "replace prefixes",
+    "name": "Replace Block Prefixes Plugin",
     "operation": replace_prefixes,
     "options": operation_options,
 }

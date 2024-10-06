@@ -1,0 +1,9 @@
+MCStructure Prefix Replacer Plugin:
+
+- This plugin searches for any **.mcstructure** files and replaces the block ID and state ID prefixes with new ones.
+- It is specifically useful for batch editing structures when the prefixes of custom blocks have been changed.
+- Note: The plugin will only update the structure if block ID or state ID prefixes are found to replace.
+- Note: There is no limit to how many blocks can be processed in one operation.
+- If you encounter any issues with the plugin, please feel free to reach out for support.
+- Discord: StealthyX#8940
+- Twitter: @RedstonerLabs
