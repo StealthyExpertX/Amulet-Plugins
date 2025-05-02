@@ -1,0 +1,10 @@
+Schem to Bedrock MCStructure v1.0.0 Plugin
+
+- Converts Java‐format Sponge schematic (.schem) files (v2 & v3) into Bedrock MCStructure (.mcstructure) files.  
+- Offers both **bulk‐folder mode** (recursively convert every .schem in a directory) and **file mode** (pick one or more schematics).  
+- Prints clean, timestamped logs in the Amulet console per‐file durations, start/end times, and a final success summary.  
+- No further updates planned; this tool solves a very specific, niche workflow unless there are bugs.  
+- Requirements: Amulet Map Editor with Opened Bedrock World.
+- Support & Feedback:  
+  - Discord: StealthyX#8940  
+  - Twitter/X: @RedstonerLabs  
